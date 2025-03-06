@@ -584,7 +584,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
           setReservationStatus(ReservationStatus.PENDING);
           setUpdateLocationStatus(true);
         }}
-        reservation={reservationCreated as ReservationFormFields}
+        reservationId={reservationCreated?.id as string}
       />
     );
   }

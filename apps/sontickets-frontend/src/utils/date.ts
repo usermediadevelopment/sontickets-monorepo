@@ -81,8 +81,8 @@ export const getHoursInRange = (start: string, end: string, interval = 30) => {
   return result;
 };
 
-export const formatDate = (date: Date) => {
-  return format(date, 'yyyy-MM-dd');
+export const formatDate = (date: Date, formatDate = 'yyyy-MM-dd', locale?: Locale) => {
+  return format(date, formatDate, { locale });
 };
 
 export const formatHour = (date: Date) => {

@@ -69,7 +69,7 @@ const schema = () => {
   });
 };
 
-const BlockDates = ({ locationUuid = '' }) => {
+const BlockDates = ({ locationUuid = '' }: { locationUuid: string }) => {
   const [hours, _] = useState<Hour[]>(getHoursWithMiddle());
   const [date, setDate] = useState<Date>(new Date());
 
@@ -108,7 +108,6 @@ const BlockDates = ({ locationUuid = '' }) => {
     setIsDeleting(true);
     if (blockDates) {
       delete blockDates[formatDay];
-      debugger;
 
       await restrictDatesRepository.current.deleteBlockDate({
         locationUuid: locationUuid,
@@ -434,7 +433,7 @@ const BlockDates = ({ locationUuid = '' }) => {
 };
 
 function customDayContent(date: Date, dateSchedule: IBlockDates | undefined) {
-  var extraDot = null;
+  let extraDot = null;
   const formattedDate = format(date, 'yyyy-MM-dd');
   if (dateSchedule) {
     const value = dateSchedule![formattedDate];

@@ -11,32 +11,39 @@ import {
   PopoverFooter,
   PopoverHeader,
   PopoverTrigger,
+  Spinner,
   Text,
   VStack,
   useDisclosure,
 } from '@chakra-ui/react';
-import { format } from 'date-fns';
 import esLocale from 'date-fns/locale/es';
 import enLocale from 'date-fns/locale/en-US';
-import { useEffect, useRef, useState } from 'react';
-import { FormType, ReservationFormFields } from '~/core/types';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FormType } from '~/core/types';
 import { useForm as useFormHook } from '~/hooks/useForm';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '~/hooks/useAuth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import firebaseFirestore from '~/config/firebase/firestore/firestore';
+import useFetchReservation from '~/hooks/useFetchReservation';
+import { formatDate, formatHourWithPeriod, getTimestampUtcToZonedTime } from '~/utils/date';
+import ReservationSummary from './ReservationSummary';
+
 export type FormSuccesfullSentProps = {
   onBack?: () => void;
-  reservation: Partial<ReservationFormFields>;
+  reservationId: string;
 };
-const FormSuccesfullSent = ({ reservation, onBack }: FormSuccesfullSentProps) => {
+const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) => {
   const { onToggle, isOpen, onClose } = useDisclosure();
   const [isCanceling, setIsCanceling] = useState(false);
   const { changeForm } = useFormHook();
   const { t, i18n } = useTranslation();
   const auth = useAuth();
   const textSuccess = useRef<HTMLParagraphElement>(null);
+  const reservation = useFetchReservation(reservationId);
+  // New state to hold company data
+  const [company, setCompany] = useState<any>(null);
 
   useEffect(() => {
     if (textSuccess.current) {
@@ -46,8 +53,8 @@ const FormSuccesfullSent = ({ reservation, onBack }: FormSuccesfullSentProps) =>
 
   const handleCancelReservation = async () => {
     setIsCanceling(true);
-    onClose();
-    const reservationRef = doc(firebaseFirestore, 'reservations', reservation?.id as string);
+    onClose!();
+    const reservationRef = doc(firebaseFirestore, 'reservations', reservationId);
     await updateDoc(reservationRef, {
       status: 'cancelled',
       cancelledBy: auth.user.uid ? 'system' : 'customer',
@@ -56,23 +63,80 @@ const FormSuccesfullSent = ({ reservation, onBack }: FormSuccesfullSentProps) =>
     toast.success(t('general.text_cancelled_reservation') ?? '');
 
     onBack!();
-    setIsCanceling(false);
+    setIsCanceling!(false);
   };
 
+  const getDay = useMemo(() => {
+    if (!reservation) return '';
+    // get day from startDatetime
+    const date = (reservation?.startDatetime as Timestamp)?.toDate();
 
+    return formatDate(date, 'dd MMMM yyyy', i18n.language == 'es' ? esLocale : enLocale);
+  }, [reservation]);
+
+  const getStarHour = useMemo(() => {
+    if (!reservation) return '';
+    // get start hour from startDatetime
+    const date = (reservation?.startDatetime as Timestamp)?.toDate();
+
+    return formatHourWithPeriod(getTimestampUtcToZonedTime(date)) ?? new Date();
+  }, [reservation]);
+
+  const getEndHour = useMemo(() => {
+    if (!reservation) return '';
+    if (!reservation?.endDatetime) {
+      return '';
+    }
+    // get end hour from startDatetime
+    const date = (reservation?.endDatetime as Timestamp)?.toDate() ?? new Date();
+
+    return `a ${formatHourWithPeriod(getTimestampUtcToZonedTime(date))}`;
+  }, [reservation]);
+
+  // Fetch company data once the reservation is available
+  useEffect(() => {
+    const fetchCompany = async () => {
+      if (reservation && reservation?.location?.company) {
+        const companySnapshot = await getDoc(reservation?.location?.company as any);
+        if (companySnapshot.exists()) {
+          const companyData = companySnapshot.data();
+          console.log(companyData);
+          if (companyData && typeof companyData === 'object') {
+            setCompany({ id: companySnapshot.id, ...companyData });
+          }
+        }
+      }
+    };
+    fetchCompany();
+  }, [reservation]);
+
+  if (company === null) {
+    return (
+      <VStack alignItems='center' justifyContent='center'>
+        <Spinner size={'xl'} />;
+      </VStack>
+    );
+  }
+
+  if (company.externalId === 'noi-remb' && reservation?.from === 'sistema') {
+    return (
+      <ReservationSummary
+        reservation={reservation}
+        goBack={() => {
+          onBack!();
+          changeForm(FormType.NEW_RESERVATION);
+        }}
+        cancelReservation={handleCancelReservation}
+      />
+    );
+  }
   return (
     <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
       <Text textAlign={'center'} fontWeight={'bold'}>
-        {t('reserve_confirmation.title_chunk_1')} {reservation?.name as string}{' '}
+        {t('reserve_confirmation.title_chunk_1')} {reservation?.namesAndSurnames as string}{' '}
         {t('reserve_confirmation.title_chunk_2')} #{reservation?.code as string}{' '}
         {t('reserve_confirmation.title_chunk_3')}
-        {format(reservation?.date as Date, ' dd MMMM yyyy', {
-          locale: i18n.language == 'es' ? esLocale : enLocale,
-        })}
-        {reservation?.endHour != '--' ? ' desde ' : ' '}
-        {reservation?.startHour}
-        {reservation?.endHour != '--' ? ' hasta ' : ' '}
-        {reservation?.endHour != '--' ? reservation?.endHour : ' '}
+        {' ' + getDay + ' ' + getStarHour + ' ' + getEndHour}
       </Text>
       <Text textAlign={'center'}>{t('reserve_confirmation.text_email_sent')} </Text>
       <Box pt={8} />
@@ -80,6 +144,7 @@ const FormSuccesfullSent = ({ reservation, onBack }: FormSuccesfullSentProps) =>
         <Button
           onClick={() => {
             onBack!();
+
             changeForm(FormType.NEW_RESERVATION);
           }}
         >
