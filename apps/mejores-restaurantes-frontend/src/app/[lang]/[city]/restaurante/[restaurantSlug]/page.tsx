@@ -53,8 +53,8 @@ import {
   WhatsAppDialogForm,
   WhatsAppFormInputs,
 } from "@/components/WhatsAppDialogForm";
-import { on } from "events";
-import SBLeadsService from "@/services/supabase/leads";
+
+import { SBLeadsService } from "@package/sontickets-services";
 
 const ImageSwiperComponent = lazy(
   () => import("@/components/ImageSwiperComponent")

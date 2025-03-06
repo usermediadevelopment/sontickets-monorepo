@@ -39,7 +39,8 @@
     "styled-components": "^6.1.13",
     "swiper": "^11.1.15",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "@package/sontickets-services": "*"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.13",
