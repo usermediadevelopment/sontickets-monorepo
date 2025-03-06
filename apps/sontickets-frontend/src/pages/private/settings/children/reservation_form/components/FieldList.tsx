@@ -82,6 +82,28 @@ const FieldList = ({ selected, onClick, onClickNewField }: FieldListProps) => {
     [form]
   );
 
+  const onTrashClick = useCallback(
+    (index: number) => {
+      const deleteField = confirm('¿Estás seguro de eliminar este campo?');
+
+      if (!deleteField) return;
+      setFields((prevCards: FormField[]) => {
+        const newFields = update(prevCards, {
+          $splice: [[index, 1]],
+        });
+
+        setDoc(
+          doc(firebaseFirestore, 'forms', form?.id ?? ''),
+          { fields: newFields },
+          { merge: true }
+        );
+
+        return newFields;
+      });
+    },
+    [fields]
+  );
+
   const renderCard = useCallback(
     (field: FormField, index: number) => {
       return (
@@ -91,6 +113,7 @@ const FieldList = ({ selected, onClick, onClickNewField }: FieldListProps) => {
           onClick={() => {
             onClick(field);
           }}
+          onTrashClick={() => onTrashClick(index)}
           key={field.slug}
           index={index}
           moveCard={moveCard}

@@ -51,10 +51,10 @@ export default function Login() {
       // Obtengo el usuario de la base de datos
       const userDocSnap = await getDoc(userDocRef);
       const userData = userDocSnap.data();
-      var userRole;
-      var company;
-      var locations = [];
-      var role;
+      let userRole;
+      let company;
+      const locations = [];
+      let role;
       if (userData?.role) {
         const roleDoc = await getDoc(userData.role);
         if (roleDoc.exists()) {

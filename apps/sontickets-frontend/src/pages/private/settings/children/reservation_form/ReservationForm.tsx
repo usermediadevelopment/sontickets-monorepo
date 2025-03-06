@@ -12,12 +12,18 @@ import {
   HStack,
   Button,
   SimpleGrid,
+  Box,
+  Alert,
+  Text,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { handleIsInvalidField, toCamelCaseSlugify } from '~/utils/general';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
 import DynamicField from './components/DynamicField';
 import FieldList from './components/FieldList';
@@ -36,6 +42,9 @@ import {
 } from 'firebase/firestore';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+
+const ENV = import.meta.env.VITE_NODE_ENV;
+const isDev = ENV === 'DEV';
 // create array list with field type
 const fieldTypes = [
   {
@@ -137,7 +146,6 @@ const ReservationForm = () => {
 
       setIsSaving(false);
     } else {
-      debugger;
       const formRef = await addDoc(collection(firebaseFirestore, 'forms'), {
         fields: [newField],
         company: user.company?.id ?? '',
@@ -232,72 +240,96 @@ const ReservationForm = () => {
       setFieldSelectedPreview(fieldSelected);
     }
   }, [fieldSelected]);
-
+  const reservationUrl = useMemo(() => {
+    if (!isDev) {
+      return `https://app.sontickets.com/form/${user.company?.externalId}?lang=es&from=mejoresrestaurantes.co`;
+    }
+    return `http://${window.location.host}/form/${user.company?.externalId}?lang=es&from=mejoresrestaurantes.co`;
+  }, [user.company?.externalId]);
   return (
-    <Grid
-      templateColumns={{
-        md: '15% 1fr 1fr',
-      }}
-      templateRows={{
-        sm: 'auto 1fr 1fr',
-      }}
-      gap={2}
-    >
-      <GridItem height={'100%'} borderRight={'5px'}>
-        <DndProvider backend={HTML5Backend}>
-          <FieldList
-            selected={fieldSelected}
-            onClick={(item: FormField) => {
-              setFieldSelected(undefined);
-              setTimeout(() => {
-                setFieldSelected(item);
-              }, 100);
+    <Box>
+      <Alert status='info'>
+        <AlertIcon />
+        <AlertTitle>Link de reservas:</AlertTitle>
+        <AlertDescription display={'flex'} alignItems={'center'}>
+          <Text fontSize={15}>{reservationUrl}</Text>
+          <Button
+            size={'sm'}
+            ml={4}
+            onClick={() => {
+              navigator.clipboard.writeText(reservationUrl);
+              alert('Copiado');
             }}
-            onClickNewField={() => {
-              setFieldSelected(undefined);
-              setFieldSelectedPreview(undefined);
-              reset();
-            }}
-          />
-        </DndProvider>
-      </GridItem>
+          >
+            Copy
+          </Button>
+        </AlertDescription>
+      </Alert>
+      <Grid
+        templateColumns={{
+          md: '25% 1fr 1fr',
+        }}
+        templateRows={{
+          sm: 'auto 1fr 1fr',
+        }}
+        mt={10}
+        gap={2}
+      >
+        <GridItem height={'100%'} borderRight={'5px'}>
+          <DndProvider backend={HTML5Backend}>
+            <FieldList
+              selected={fieldSelected}
+              onClick={(item: FormField) => {
+                setFieldSelected(undefined);
+                setTimeout(() => {
+                  setFieldSelected(item);
+                }, 100);
+              }}
+              onClickNewField={() => {
+                setFieldSelected(undefined);
+                setFieldSelectedPreview(undefined);
+                reset();
+              }}
+            />
+          </DndProvider>
+        </GridItem>
 
-      <GridItem>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Stack pl={10} spacing={4}>
-            {!fieldSelected && <Heading size={'md'}>Crear nuevo campo</Heading>}
-            {fieldSelected && <Heading size={'md'}>Actualizar - {fieldSelected.name.es}</Heading>}
+        <GridItem>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack pl={10} spacing={4}>
+              {!fieldSelected && <Heading size={'md'}>Crear nuevo campo</Heading>}
+              {fieldSelected && <Heading size={'md'}>Actualizar - {fieldSelected.name.es}</Heading>}
 
-            <FormControl isInvalid={handleIsInvalidField(errors.type?.message)}>
-              <FormLabel htmlFor='size'>Tipo*</FormLabel>
-              <Select
-                placeholder='Selecciona una opción'
-                borderColor={'black'}
-                {...register('type')}
-              >
-                {fieldTypes.map((fieldType) => {
-                  return (
-                    <option key={fieldType.id} value={fieldType.id}>
-                      {fieldType.name}
-                    </option>
-                  );
-                })}
-              </Select>
-              <FormErrorMessage>{errors.type?.message}</FormErrorMessage>
-            </FormControl>
-            <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
-              <FormControl isInvalid={handleIsInvalidField(errors.name?.message)}>
-                <FormLabel htmlFor='name'> Nombre(es) *</FormLabel>
-                <Input borderColor={'black'} {...register('name')} />
-                <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+              <FormControl isInvalid={handleIsInvalidField(errors.type?.message)}>
+                <FormLabel htmlFor='size'>Tipo*</FormLabel>
+                <Select
+                  placeholder='Selecciona una opción'
+                  borderColor={'black'}
+                  {...register('type')}
+                >
+                  {fieldTypes.map((fieldType) => {
+                    return (
+                      <option key={fieldType.id} value={fieldType.id}>
+                        {fieldType.name}
+                      </option>
+                    );
+                  })}
+                </Select>
+                <FormErrorMessage>{errors.type?.message}</FormErrorMessage>
               </FormControl>
-              <FormControl isInvalid={handleIsInvalidField(errors.nameEn?.message)}>
-                <FormLabel htmlFor='name'> Nombre(en) </FormLabel>
-                <Input borderColor={'black'} {...register('nameEn')} />
-                <FormErrorMessage>{errors.nameEn?.message}</FormErrorMessage>
-              </FormControl>
-            </SimpleGrid>
-            {/*      <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
+              <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
+                <FormControl isInvalid={handleIsInvalidField(errors.name?.message)}>
+                  <FormLabel htmlFor='name'> Nombre(es) *</FormLabel>
+                  <Input borderColor={'black'} {...register('name')} />
+                  <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+                </FormControl>
+                <FormControl isInvalid={handleIsInvalidField(errors.nameEn?.message)}>
+                  <FormLabel htmlFor='name'> Nombre(en) </FormLabel>
+                  <Input borderColor={'black'} {...register('nameEn')} />
+                  <FormErrorMessage>{errors.nameEn?.message}</FormErrorMessage>
+                </FormControl>
+              </SimpleGrid>
+              {/*      <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
               <FormControl isInvalid={handleIsInvalidField(errors.placeholder?.message)}>
                 <FormLabel htmlFor='placeholder'> Placeholder *</FormLabel>
                 <Input borderColor={'black'} {...register('placeholder')} />
@@ -309,55 +341,55 @@ const ReservationForm = () => {
                 <FormErrorMessage>{errors.placeholderEn?.message}</FormErrorMessage>
               </FormControl>
             </SimpleGrid> */}
-            {watchType === FormFieldType.SELECT && (
-              <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
-                <FormControl isInvalid={handleIsInvalidField(errors.options?.message)}>
-                  <FormLabel htmlFor='options'>Opciones</FormLabel>
+              {watchType === FormFieldType.SELECT && (
+                <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
+                  <FormControl isInvalid={handleIsInvalidField(errors.options?.message)}>
+                    <FormLabel htmlFor='options'>Opciones</FormLabel>
 
-                  <CreatableSelect
-                    isMulti
-                    formatCreateLabel={(value) => 'Crear opción ' + value}
-                    defaultValue={fieldSelected?.options?.map((option) => {
-                      return {
-                        label: option.value.es,
-                        value: option.id,
-                      };
-                    })}
-                    {...register('options')}
-                    onChange={(options) => {
-                      setValue(
-                        'options',
-                        options.map((option: any) => option.value)
-                      );
-                    }}
-                  />
-                  <FormErrorMessage>{errors.options?.message}</FormErrorMessage>
-                </FormControl>
-                <FormControl isInvalid={handleIsInvalidField(errors.optionsEn?.message)}>
-                  <FormLabel htmlFor='options'>Opciones (en)</FormLabel>
+                    <CreatableSelect
+                      isMulti
+                      formatCreateLabel={(value) => 'Crear opción ' + value}
+                      defaultValue={fieldSelected?.options?.map((option) => {
+                        return {
+                          label: option.value.es,
+                          value: option.id,
+                        };
+                      })}
+                      {...register('options')}
+                      onChange={(options) => {
+                        setValue(
+                          'options',
+                          options.map((option: any) => option.value)
+                        );
+                      }}
+                    />
+                    <FormErrorMessage>{errors.options?.message}</FormErrorMessage>
+                  </FormControl>
+                  <FormControl isInvalid={handleIsInvalidField(errors.optionsEn?.message)}>
+                    <FormLabel htmlFor='options'>Opciones (en)</FormLabel>
 
-                  <CreatableSelect
-                    isMulti
-                    formatCreateLabel={(value) => 'Create option ' + value}
-                    defaultValue={fieldSelected?.options?.map((option) => {
-                      return {
-                        label: option.value.en,
-                        value: option.id,
-                      };
-                    })}
-                    {...register('optionsEn')}
-                    onChange={(options) => {
-                      setValue(
-                        'optionsEn',
-                        options.map((option: any) => option.value)
-                      );
-                    }}
-                  />
-                  <FormErrorMessage>{errors.optionsEn?.message}</FormErrorMessage>
-                </FormControl>
-              </SimpleGrid>
-            )}
-            {/*    <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
+                    <CreatableSelect
+                      isMulti
+                      formatCreateLabel={(value) => 'Create option ' + value}
+                      defaultValue={fieldSelected?.options?.map((option) => {
+                        return {
+                          label: option.value.en,
+                          value: option.id,
+                        };
+                      })}
+                      {...register('optionsEn')}
+                      onChange={(options) => {
+                        setValue(
+                          'optionsEn',
+                          options.map((option: any) => option.value)
+                        );
+                      }}
+                    />
+                    <FormErrorMessage>{errors.optionsEn?.message}</FormErrorMessage>
+                  </FormControl>
+                </SimpleGrid>
+              )}
+              {/*    <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
               <FormControl isInvalid={handleIsInvalidField(errors.defaultValue?.message)}>
                 <FormLabel htmlFor='defaultValue'>Valor por defecto </FormLabel>
                 <Input borderColor={'black'} {...register('defaultValue')} />
@@ -370,46 +402,47 @@ const ReservationForm = () => {
               </FormControl>
             </SimpleGrid> */}
 
-            <FormControl
-              display='flex'
-              alignItems='center'
-              isInvalid={handleIsInvalidField(errors.required?.message)}
-            >
-              <FormLabel htmlFor='required' mb='0'>
-                Es requerido?
-              </FormLabel>
-              <Switch id='required' isChecked={watchRequired} {...register('required')} />
-              <FormErrorMessage>{errors.required?.message}</FormErrorMessage>
-            </FormControl>
+              <FormControl
+                display='flex'
+                alignItems='center'
+                isInvalid={handleIsInvalidField(errors.required?.message)}
+              >
+                <FormLabel htmlFor='required' mb='0'>
+                  Es requerido?
+                </FormLabel>
+                <Switch id='required' isChecked={watchRequired} {...register('required')} />
+                <FormErrorMessage>{errors.required?.message}</FormErrorMessage>
+              </FormControl>
 
-            <FormControl
-              display='flex'
-              alignItems='center'
-              isInvalid={handleIsInvalidField(errors.hasConfirmation?.message)}
-            >
-              <FormLabel htmlFor='required' mb='0'>
-                Debe confirmarse ?
-              </FormLabel>
-              <Switch
-                id='required'
-                isChecked={watchHasConfirmation}
-                {...register('hasConfirmation')}
-              />
-              <FormErrorMessage>{errors.hasConfirmation?.message}</FormErrorMessage>
-            </FormControl>
+              <FormControl
+                display='flex'
+                alignItems='center'
+                isInvalid={handleIsInvalidField(errors.hasConfirmation?.message)}
+              >
+                <FormLabel htmlFor='required' mb='0'>
+                  Debe confirmarse ?
+                </FormLabel>
+                <Switch
+                  id='required'
+                  isChecked={watchHasConfirmation}
+                  {...register('hasConfirmation')}
+                />
+                <FormErrorMessage>{errors.hasConfirmation?.message}</FormErrorMessage>
+              </FormControl>
 
-            <HStack mt={10} justifyContent={'center'}>
-              <Button isLoading={isSaving} type='submit' colorScheme='blue'>
-                Guardar
-              </Button>
-            </HStack>
-          </Stack>
-        </form>
-      </GridItem>
-      <GridItem px={10}>
-        {fieldSelectedPreview && <DynamicField field={fieldSelectedPreview} />}
-      </GridItem>
-    </Grid>
+              <HStack mt={10} justifyContent={'center'}>
+                <Button isLoading={isSaving} type='submit' colorScheme='blue'>
+                  Guardar
+                </Button>
+              </HStack>
+            </Stack>
+          </form>
+        </GridItem>
+        <GridItem px={10}>
+          {fieldSelectedPreview && <DynamicField field={fieldSelectedPreview} />}
+        </GridItem>
+      </Grid>
+    </Box>
   );
 };
 

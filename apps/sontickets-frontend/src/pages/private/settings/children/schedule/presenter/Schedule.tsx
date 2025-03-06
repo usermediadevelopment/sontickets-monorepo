@@ -19,7 +19,7 @@ export enum Status {
   active = 'active',
   inactive = 'inactive',
 }
-const Schedule = ({ locationUuid = '' }) => {
+const Schedule = ({ locationUuid = '' }: { locationUuid: string }) => {
   const [hours, _] = useState<Hour[]>(getHoursWithMiddle());
   const [isSaving, setIsSaving] = useState<boolean>();
   const [location, setLocation] = useState<Location>();

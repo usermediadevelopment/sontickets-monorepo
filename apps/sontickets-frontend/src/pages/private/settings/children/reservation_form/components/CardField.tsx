@@ -4,6 +4,7 @@ import type { Identifier, XYCoord } from 'dnd-core';
 import type { FC } from 'react';
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import { FiTrash } from 'react-icons/fi';
 import { FormField } from '~/core/types';
 
 export const ItemTypes = {
@@ -14,6 +15,7 @@ export interface CardProps {
   field: FormField;
   isSelected: boolean;
   onClick: () => void;
+  onTrashClick: () => void;
   index: number;
   moveCard: (dragIndex: number, hoverIndex: number) => void;
 }
@@ -24,7 +26,14 @@ interface DragItem {
   type: string;
 }
 
-export const CardField: FC<CardProps> = ({ field, isSelected, onClick, index, moveCard }) => {
+export const CardField: FC<CardProps> = ({
+  field,
+  isSelected,
+  onClick,
+  onTrashClick,
+  index,
+  moveCard,
+}) => {
   const ref = useRef<HTMLDivElement>(null);
   const [{ handlerId }, drop] = useDrop<DragItem, void, { handlerId: Identifier | null }>({
     accept: ItemTypes.CARD,
@@ -103,13 +112,6 @@ export const CardField: FC<CardProps> = ({ field, isSelected, onClick, index, mo
       opacity={opacity}
       bg={isSelected ? '#2b7a7b' : 'white'}
       textColor={isSelected ? 'white' : 'black'}
-      _hover={{
-        bg: '#2b7a7b',
-        opacity: '0.9',
-        cursor: 'pointer',
-        textColor: 'white',
-      }}
-      onClick={onClick}
       data-handler-id={handlerId}
     >
       <CardBody py={2}>
@@ -121,10 +123,19 @@ export const CardField: FC<CardProps> = ({ field, isSelected, onClick, index, mo
           </Flex>
           <IconButton
             _hover={{ bgColor: '#2b7a7b' }}
-            variant='ghost'
+            variant='outline'
             colorScheme='gray'
             aria-label='Edit'
-            icon={<EditIcon />}
+            size={'sm'}
+            icon={<EditIcon onClick={onClick} />}
+          />
+          <IconButton
+            _hover={{ bgColor: '#2b7a7b' }}
+            variant='outline'
+            colorScheme='gray'
+            aria-label='Edit'
+            size={'sm'}
+            icon={<FiTrash onClick={onTrashClick} />}
           />
         </Flex>
       </CardBody>

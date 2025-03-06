@@ -83,6 +83,7 @@ export type Reservation = {
   acceptReceiveNews: boolean;
   id: string;
   name: string;
+  namesAndSurnames?: string;
   location: Location | undefined;
   identification: string;
   email: string;
@@ -104,6 +105,8 @@ export type Reservation = {
   timeEnd: string;
   date: string;
   code?: string;
+  startDatetime?: Timestamp | Date | string | null;
+  endDatetime?: Timestamp | Date | string | null;
 };
 
 export enum FormType {
@@ -212,7 +215,7 @@ export interface ReservationFormFields extends FieldTypes {
 }
 
 export type EmailData = {
-  data: Object;
+  data: object;
   html: string;
   text?: string;
 };

@@ -29,6 +29,13 @@ i18n
             text_email_sent: `We have sent an email confirming your reservation,
              if you don't see it in your inbox, please check your 
              SPAM folder and mark it as junk mail.`,
+            text_reservation_summary: 'Your reservation has been confirmed',
+            text_reservation_code: 'Reservation code',
+            text_day: 'Day',
+            text_hour: 'Hour',
+            text_location: 'Location',
+            text_people: 'People',
+            text_share_whatsapp: 'Share on Whatsapp',
           },
           search_reservation_form: {
             title: 'Enter your reservation code to validate it and be able to edit or cancel it.',
@@ -102,6 +109,14 @@ i18n
             text_email_sent: `Hemos enviado un correo electrónico confirmando 
             tu reserva, si no lo visualizas en tu bandeja de entrada, revisa tu 
             carpeta de SPAM y márcalo como un correo deseado`,
+
+            text_reservation_summary: 'Tu reserva ha sido confirmada',
+            text_reservation_code: 'Código de reserva',
+            text_day: 'Día',
+            text_hour: 'Hora',
+            text_location: 'Ubicación',
+            text_people: 'Personas',
+            text_share_whatsapp: 'Compartir en Whatsapp',
           },
           search_reservation_form: {
             title: 'Ingresa el código de tu reserva para validarla y poder editarla o cancelarla',

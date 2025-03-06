@@ -433,7 +433,7 @@ const Reservations = () => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Generar reserva</ModalHeader>
-          <ModalCloseButton />
+          <ModalCloseButton size={'lg'} />
           <ModalBody>
             <Forms />
           </ModalBody>
