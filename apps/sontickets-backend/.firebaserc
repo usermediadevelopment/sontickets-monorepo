@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "sontickets-1e1a6",
+    "prod": "sontickets-1e1a6",
+    "dev": "sontickets-dev"
+  },
+  "targets": {},
+  "etags": {}
+}

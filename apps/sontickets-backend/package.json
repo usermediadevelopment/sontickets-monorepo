@@ -1,0 +1,15 @@
+{
+  "name": "sontickets-backend",
+  "private": true,
+  "version": "1.0.0",
+  "main": "package.json",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "cd functions && yarn dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "deploy-graphql": "sanity graphql deploy",
+    "generate:schemas": "npx sanity typegen generate && npx sanity schema extract"
+  }
+}
