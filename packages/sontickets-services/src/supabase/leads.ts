@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { supabase } from "@/config/supabase/client";
+import { supabase } from "../config/supabase-client";
 
 export interface Lead {
   id?: number;
