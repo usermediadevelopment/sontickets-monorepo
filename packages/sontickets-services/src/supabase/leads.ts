@@ -52,8 +52,6 @@ class SBLeadsService {
     data?: Lead[];
     error?: string;
   }> {
-    console.log("restaurantId", restaurantId);
-    console.log("filters", filters);
     try {
       // add a filter by range of dates(created_at)
       let query = supabase.from("leads").select("*").order("created_at", {

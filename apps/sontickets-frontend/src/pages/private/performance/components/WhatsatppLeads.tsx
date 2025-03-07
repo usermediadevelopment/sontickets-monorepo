@@ -77,7 +77,7 @@ const WhatsatppLeads = ({ locationId, dateRange }: WhatsatppLeadsProps) => {
 
     leadsService.suscribeToInsertLeads(user.company?.id ?? '', (newLead) => {
       // set data with new lead
-      setLeads((prevData) => {
+      setLeads((prevData: any) => {
         const localDateString = formatDate(
           getTimestampUtcToZonedTime(new Date(newLead.createdAt + 'Z')),
           'yyyy-MM-dd HH:mm:ss'

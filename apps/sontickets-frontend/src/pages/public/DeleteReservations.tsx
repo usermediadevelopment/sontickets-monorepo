@@ -7,10 +7,7 @@ import firebaseFirestore from '~/config/firebase/firestore/firestore';
 
 export const schema = () =>
   yup.object({
-    email: yup
-      .string()
-      .email('Required' ?? '')
-      .required('Required' ?? ''),
+    email: yup.string().email('Required').required('Required'),
   });
 
 const DeleteReservations = () => {
