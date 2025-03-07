@@ -56,7 +56,7 @@ const FieldList = ({ selected, onClick, onClickNewField }: FieldListProps) => {
     };
   };
 
-  let interval: NodeJS.Timer;
+  let interval: ReturnType<typeof setTimeout>;
   const moveCard = useCallback(
     async (dragIndex: number, hoverIndex: number) => {
       setFields((prevCards: FormField[]) => {

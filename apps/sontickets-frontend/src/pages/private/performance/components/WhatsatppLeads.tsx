@@ -222,7 +222,7 @@ const WhatsatppLeads = ({ locationId, dateRange }: WhatsatppLeadsProps) => {
           </Button>
 
           {Array.from({ length: Math.min(totalPages, 3) }).map((_, index) => {
-            let pageNumber;
+            let pageNumber: number;
 
             if (totalPages <= 3) {
               pageNumber = index + 1;

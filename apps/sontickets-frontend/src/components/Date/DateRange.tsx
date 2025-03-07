@@ -55,6 +55,7 @@ const DateRangeComp = ({ onChange, startItem = initialStart }: DateRangeCompProp
           />
         </PopoverTrigger>
         <PopoverContent ml={5}>
+          {/* @ts-expect-error - DateRange component type incompatibility */}
           <DateRange
             ref={undefined}
             onChange={handleOnChange}
