@@ -5,7 +5,7 @@ import esLocale from 'date-fns/locale/es';
 import { Box, Heading, Input, Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-
+import './DateRange.style.css';
 export type StartItemType = {
   startDate: Date;
   endDate: Date;
@@ -40,28 +40,32 @@ const DateRangeComp = ({ onChange, startItem = initialStart }: DateRangeCompProp
 
   return (
     <Box>
-      <Heading fontSize={'large'}>Fechas</Heading>
+      <Heading mb={2} fontSize={'large'}>
+        Fechas
+      </Heading>
       <Popover>
         <PopoverTrigger>
           <Input
             height={'35px'}
-            width={'200px'}
+            width={'260px'}
             fontSize={12}
             value={dateRangePicked}
             readOnly
             className='inputBox'
           />
         </PopoverTrigger>
-        <PopoverContent>
+        <PopoverContent ml={5}>
           <DateRange
+            ref={undefined}
             onChange={handleOnChange}
             editableDateInputs={true}
             moveRangeOnFirstSelection={false}
             ranges={range}
             months={1}
-            direction='horizontal'
+            direction='vertical'
             className='calendarElement'
             locale={esLocale}
+            showPreview
           />
         </PopoverContent>
       </Popover>

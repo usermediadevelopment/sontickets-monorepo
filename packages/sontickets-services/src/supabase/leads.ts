@@ -7,7 +7,18 @@ export interface Lead {
   phone: string;
   restaurantId: string;
   locationId: string;
+  createdAt?: string;
 }
+
+type GetLeads = {
+  restaurantId?: string;
+  filters?: LeadFilters;
+};
+// Get all leads (Optional: Filter by restaurant_id)
+type LeadFilters = {
+  dateRange?: { startDate: string; endDate: string };
+  locationId?: string;
+};
 
 class SBLeadsService {
   // Create a new lead
@@ -36,21 +47,46 @@ class SBLeadsService {
     }
   }
 
-  // Get all leads (Optional: Filter by restaurant_id)
-  async getLeads(
-    restaurant_id?: number
-  ): Promise<{ success: boolean; data?: Lead[]; error?: string }> {
+  async getLeads({ restaurantId, filters }: GetLeads): Promise<{
+    success: boolean;
+    data?: Lead[];
+    error?: string;
+  }> {
+    console.log("restaurantId", restaurantId);
+    console.log("filters", filters);
     try {
-      let query = supabase.from("leads").select("*");
+      // add a filter by range of dates(created_at)
+      let query = supabase.from("leads").select("*").order("created_at", {
+        ascending: false,
+      });
+      if (filters?.dateRange?.startDate && filters?.dateRange?.endDate) {
+        query = query
+          .gte("created_at", filters.dateRange?.startDate)
+          .lte("created_at", filters.dateRange?.endDate);
+      }
+      if (filters?.locationId) {
+        query = query.eq("location_id", filters.locationId);
+      }
 
-      if (restaurant_id) {
-        query = query.eq("restaurant_id", restaurant_id);
+      if (restaurantId) {
+        query = query.eq("restaurant_id", restaurantId);
       }
 
       const { data, error } = await query;
+      const dataMapped = data?.map((item) => {
+        return {
+          id: Number(item.id) ?? 0,
+          name: item.name ?? "",
+          email: item.email ?? "",
+          phone: item.phone ?? "",
+          restaurantId: item.restaurant_id ?? "",
+          locationId: item.location_id ?? "",
+          createdAt: item.created_at ?? "",
+        };
+      });
 
       if (error) throw error;
-      return { success: true, data };
+      return { success: true, data: dataMapped };
     } catch (error: any) {
       console.error("Error fetching leads:", error.message);
       return { success: false, error: error.message };
@@ -107,6 +143,40 @@ class SBLeadsService {
       console.error("Error deleting lead:", error.message);
       return { success: false, error: error.message };
     }
+  }
+
+  suscribeToInsertLeads(
+    restaurantId: string,
+    callback?: (payload: Lead) => void
+  ) {
+    console.log("restaurantId", restaurantId);
+    const channels = supabase
+      .channel("leads-insert-channel")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "leads",
+          filter: `restaurant_id=eq.${restaurantId}`,
+        },
+        (payload) => {
+          const newPayload = {
+            id: Number(payload.new.id),
+            name: payload.new.name ?? "",
+            email: payload.new.email ?? "",
+            phone: payload.new.phone ?? "",
+            restaurantId: payload.new.restaurant_id ?? "",
+            locationId: payload.new.location_id ?? "",
+            createdAt: payload.new.created_at,
+          };
+          console.log("New lead inserted:", newPayload);
+          callback && callback(newPayload);
+        }
+      )
+      .subscribe();
+
+    return channels;
   }
 }
 
