@@ -189,7 +189,7 @@ const SidebarWithHeader = () => {
       <Collapse in={isOpen} animateOpacity>
         <MobileNav />
       </Collapse>
-      <Box overflowX='unset' overflowY='unset' mt={'65px'}>
+      <Box overflowX='unset' overflowY='unset' mt={'85px'}>
         <Outlet />
       </Box>
     </Box>
@@ -375,6 +375,11 @@ const NAV_ITEMS: Array<NavItem> = [
   {
     label: 'Reservas',
     to: './reservas',
+    isNew: false,
+  },
+  {
+    label: 'Rendimiento',
+    to: './performance',
     isNew: false,
   },
   {

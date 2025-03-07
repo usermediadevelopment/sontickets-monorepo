@@ -14,16 +14,16 @@ import {
   ChevronRight,
   StarIcon,
   Map,
-  ArrowRight,
   LandPlot,
   NutOff,
   Calendar,
-  // Add the WhatsApp icon if you like
-  // You can get a Lucide icon for WhatsApp from lucide.dev
+  Navigation,
+  PhoneCall,
+  MapPinHouse,
 } from "lucide-react";
 
 import { PortableText, PortableTextReactComponents } from "@portabletext/react";
-import { lazy, use, useMemo, useState } from "react";
+import { lazy, use, useEffect, useMemo, useState } from "react";
 import { SLocation, SOpeningHour } from "@/types/sanity.custom.type";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -55,6 +55,7 @@ import {
 } from "@/components/WhatsAppDialogForm";
 
 import { SBLeadsService } from "@package/sontickets-services";
+import WhatsappIcon from "@/components/icons/WhatsappIcon";
 
 const ImageSwiperComponent = lazy(
   () => import("@/components/ImageSwiperComponent")
@@ -86,27 +87,47 @@ export default function RestaurantPage({
     placeId: location?.googlePlaceId ?? "",
   });
 
-  const handleNavigate = () => {
-    const address = location?.address ?? "";
-    let url;
+  const [isSticky, setIsSticky] = useState(false);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      console.log("window.scrollY", window.scrollY);
+      console.log("window.innerHeight", window.innerHeight);
+      if (window.scrollY > window.innerHeight / 1.5) {
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleNavigate = () => {
+    const addressB = location?.address + ", " + location?.name;
+    const fallbackUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addressB)}`;
+
+    let appUrl;
     if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      // iOS devices
-      url = "comgooglemaps://?q=" + encodeURIComponent(address);
+      appUrl = "comgooglemaps://?q=" + encodeURIComponent(addressB);
     } else if (/Android/i.test(navigator.userAgent)) {
-      // Android devices
-      url = "geo:0,0?q=" + encodeURIComponent(address);
+      appUrl = `intent://maps.google.com/maps?daddr=${encodeURIComponent(addressB)}#Intent;scheme=http;package=com.google.android.apps.maps;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
     } else {
-      // Other devices (desktop)
-      url =
-        "https://www.google.com/maps/search/?api=1&query=" +
-        encodeURIComponent(address);
+      // If not iOS or Android, just open the fallback right away
+      window.location.href = fallbackUrl;
+      return;
     }
 
-    window.location.href = url;
+    // Try opening the native app URL
+    window.location.href = appUrl;
   };
 
-  const share = () => {
+  const handleOpenReservationDialog = () => {
+    setOpenDialogReservation(true);
+  };
+
+  const handleShare = () => {
     if (isDesktop) {
       const message = location?.seo?.metaDescription ?? "";
       const url = `https://wa.me/?text=${encodeURIComponent(message)} ${encodeURIComponent(
@@ -179,31 +200,68 @@ export default function RestaurantPage({
   return (
     <div className="py-8 bg-gray-100 min-h-screen relative">
       {/* ------ EXISTING MOBILE BOTTOM BAR ------ */}
-      <div className="visible md:hidden bottom-0  fixed  justify-between items-center w-full bg-[#6000FB] z-10 flex px-5 py-5 gap-2">
-        <div className="flex flex-col">
-          <span className="text-sm text-white">Asegura tu lugar en</span>
-          <span className="tex-md text-white">
-            {location?.restaurant?.name}
-          </span>
-        </div>
+      <div className="visible md:hidden bottom-0  fixed  justify-between items-center w-full bg-[#6000FB] z-10 flex py-6 gap-2">
+        <div className="flex flex-row flex-grow  gap-2 overflow-x-auto  overflow-hidden  no-scrollbar">
+          <ButtonReservation
+            onClick={handleOpenReservationDialog}
+            customVariant="default"
+          />
+          <Button
+            variant={"outline"}
+            onClick={handleNavigate}
+            className=" px-4 py-2 rounded-[5px]"
+          >
+            <Navigation />
+            Cómo llegar
+          </Button>
 
-        <div>
-          <div className="flex flex-row">
-            <Button
-              onClick={() => {
-                setOpenDialogReservation(true);
-              }}
-              className="bg-white hover:bg-white text-[#6000FB]  hover:text-[#6000FB]  px-4 py-2 rounded-[5px] transition-colors"
-            >
-              Reservar Ahora
-            </Button>
-            <Button variant={"link"} className="flex m-0 p-0 pl-4 ">
-              <Share2 onClick={share} className="h-4 w-4 mr-1  text-white" />
-            </Button>
-          </div>
+          <Button
+            variant={"outline"}
+            onClick={handleNavigate}
+            className=" px-4 py-2 rounded-[5px]"
+          >
+            <PhoneCall />
+            LLamar
+          </Button>
+
+          <Button
+            onClick={handleShare}
+            variant={"outline"}
+            className="px-4 py-2 rounded-[5px]  mr-4"
+          >
+            <Share2 className="h-4 w-4 mr-1" />
+            Compartir
+          </Button>
         </div>
       </div>
       {/* -------------------------------------- */}
+
+      {/* ------ When scroll is in the screen middle i would------ */}
+      <div
+        className={`items-center text-sm container mx-auto py-3 px-4 md:px-0 transition-shadow duration-300 ${
+          isSticky
+            ? "sm:flex md:hidden fixed top-[80px] left-0 right-0 z-50 bg-gray-100 shadow"
+            : "hidden"
+        }`}
+      >
+        <div className="flex flex-col">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-lg font-bold my-1">{location?.name}</h1>
+            </div>
+
+            <div>
+              <Button
+                onClick={handleShare}
+                variant={"outline"}
+                className="flex"
+              >
+                <Share2 className="h-4 w-4 mr-1" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ------ BREADCRUMBS ------ */}
       <div className="flex items-center text-sm container mx-auto my-2  px-4 md:px-0 ">
@@ -262,9 +320,12 @@ export default function RestaurantPage({
                 </div>
 
                 <div>
-                  <Button onClick={share} variant={"link"} className="flex">
+                  <Button
+                    onClick={handleShare}
+                    variant={"outline"}
+                    className="flex"
+                  >
                     <Share2 className="h-4 w-4 mr-1" />
-                    Compartir
                   </Button>
                 </div>
               </div>
@@ -342,35 +403,50 @@ export default function RestaurantPage({
                     )}
                   </div>
 
-                  <Button
-                    onClick={() => {
-                      setOpenDialogReservation(true);
-                    }}
-                    className="bg-[#6000FB] hover:bg-[#6000FB] text-white px-4 py-2 rounded-[5px]  transition-colors "
-                  >
-                    Reservar Ahora
-                  </Button>
-                </div>
-
-                <div className="mt-8 mb-10">
-                  <h3 className="font-bold  text-lg">Menciones</h3>
-
-                  <div className="mt-5 flex flex-row gap-10 flex-wrap justify-center md:justify-start">
-                    {location?.awards &&
-                      location.awards.map((award, index) => {
-                        return (
-                          <Image
-                            key={index.toString()}
-                            src={award?.asset?.url}
-                            alt={"award"}
-                            style={{ borderRadius: 4, objectFit: "contain" }}
-                            width={140}
-                            height={100}
-                          />
-                        );
-                      })}
+                  <div className="flex gap-3 items-center">
+                    <Button
+                      onClick={handleOpenReservationDialog}
+                      className="bg-[#6000FB] hover:bg-[#6000FB] text-white px-4 py-2 rounded-[5px]  transition-colors "
+                    >
+                      Reservar Ahora
+                    </Button>
+                    <Button
+                      onClick={() => setOpenWhatsAppModal(true)}
+                      className="rounded-full  w-9 h-9 shadow-sm shadow-slate-400 bg-[#25D366] hover:bg-[#25D366] hover:opacity-80 text-white flex items-center justify-center "
+                      aria-label="WhatsApp"
+                    >
+                      <WhatsappIcon
+                        style={{
+                          width: 20,
+                          height: 20,
+                          fill: "white",
+                        }}
+                      />
+                    </Button>
                   </div>
                 </div>
+
+                {location?.awards?.length && (
+                  <div className="mt-8 mb-10">
+                    <h3 className="font-bold  text-lg">Menciones</h3>
+
+                    <div className="mt-5 flex flex-row gap-10 flex-wrap justify-center md:justify-start">
+                      {location?.awards &&
+                        location.awards.map((award, index) => {
+                          return (
+                            <Image
+                              key={index.toString()}
+                              src={award?.asset?.url}
+                              alt={"award"}
+                              style={{ borderRadius: 4, objectFit: "contain" }}
+                              width={140}
+                              height={100}
+                            />
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
 
                 <CharacteristicsAndServices location={location as SLocation} />
               </div>
@@ -381,26 +457,35 @@ export default function RestaurantPage({
             <Card className="rounded-lg bg-slate-50 h-auto md:w-[400px]">
               <CardContent className="p-6">
                 <div className="space-y-4 mb-6">
-                  <div className="flex items-center">
-                    <Button
-                      onClick={() => {
-                        setOpenDialogReservation(true);
-                      }}
-                      className="bg-[#6000FB] hover:bg-[#6000FB] text-white px-4 py-2 rounded-[5px] transition-colors hidden md:block"
-                    >
-                      Reservar Ahora
-                    </Button>
+                  <div className="flex  flex-col ">
+                    <div className="flex flex-row items-center gap-2 mb-3 flex-wrap">
+                      <div className="flex flex-1">
+                        <Button
+                          variant={"outline"}
+                          onClick={handleNavigate}
+                          className="flex flex-row  w-full"
+                        >
+                          <MapPinHouse />
+                          <span className="font-bold ">Cómo llegar</span>
+                        </Button>
+                      </div>
+                      <div className="flex flex-1">
+                        <Button
+                          variant={"outline"}
+                          onClick={handleNavigate}
+                          className="flex flex-row  w-full"
+                        >
+                          <PhoneCall />
+                          <span className="font-bold ">Llamar</span>
+                        </Button>
+                      </div>
+                    </div>
+                    <ButtonReservation
+                      onClick={handleOpenReservationDialog}
+                      customVariant="full"
+                    />
                   </div>
                   <div>
-                    <Button
-                      variant={"link"}
-                      onClick={handleNavigate}
-                      className="flex flex-row items-center pl-0 text-md"
-                    >
-                      <span className="font-bold text-md">Cómo llegar</span>
-                      <ArrowRight />
-                    </Button>
-
                     <GoogleMapComponent
                       cz-shortcut-listen="true"
                       latLng={{
@@ -482,6 +567,35 @@ export default function RestaurantPage({
     </div>
   );
 }
+
+type ButtonReservationProps = {
+  onClick: () => void;
+  customVariant: "full" | "default";
+};
+const ButtonReservation = ({
+  onClick,
+  customVariant,
+}: ButtonReservationProps) => {
+  if (customVariant === "default") {
+    return (
+      <Button
+        onClick={onClick}
+        className="bg-white hover:bg-white text-[#6000FB]  hover:text-[#6000FB]  px-4 py-2 rounded-[5px] transition-colors ml-4"
+      >
+        Reservar
+      </Button>
+    );
+  } else if (customVariant === "full") {
+    return (
+      <Button
+        onClick={onClick}
+        className="bg-[#6000FB] hover:bg-[#6000FB] text-white px-4 py-2 rounded-[5px] transition-colors hidden md:block w-full"
+      >
+        Reservar Ahora
+      </Button>
+    );
+  }
+};
 
 type CharacteristicsAndServicesProps = {
   location: SLocation;

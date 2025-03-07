@@ -80,7 +80,7 @@ const Locations = ({
 
       <Stack
         flexDirection={{ sm: 'row', md: 'column' }}
-        mt={5}
+        mt={2}
         {...group}
         spacing={{
           sm: 0,
