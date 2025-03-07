@@ -53,6 +53,7 @@ const DateRangeComp = ({ onChange, startItem = initialStart }: DateRangeCompProp
           />
         </PopoverTrigger>
         <PopoverContent>
+          {/* @ts-expect-error - DateRange component type incompatibility */}
           <DateRange
             onChange={handleOnChange}
             editableDateInputs={true}
