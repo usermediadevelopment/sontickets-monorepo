@@ -34,10 +34,12 @@ import { FiBell, FiChevronDown } from 'react-icons/fi';
 import { useAuth } from '~/hooks/useAuth';
 import firebaseAuth from '~/config/firebase/auth';
 import { signOut } from 'firebase/auth';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 const SidebarWithHeader = () => {
   const { isOpen, onToggle } = useDisclosure();
   const { user, signOut: signOutContext } = useAuth();
+
+  console.log('user', user);
 
   const navigate = useNavigate();
 
@@ -55,6 +57,37 @@ const SidebarWithHeader = () => {
   const _onClickGoSettings = () => {
     navigate('/settings');
   };
+
+  const getMenuItems = useMemo(() => {
+    const navItems: Array<NavItem> = [
+      {
+        label: 'Inicio',
+        to: './',
+        isNew: false,
+      },
+      {
+        label: 'Reservas',
+        to: './reservas',
+        isNew: false,
+      },
+      {
+        label: 'Leads',
+        to: './leads',
+        isNew: false,
+      },
+      {
+        label: 'Informes',
+        to: './reports',
+        isNew: true,
+      },
+    ];
+
+    if (!user.company?.isLeadsActive) {
+      return navItems.filter((nav) => nav.label != 'Leads');
+    }
+
+    return navItems;
+  }, [user.company?.isLeadsActive]);
 
   return (
     <Box>
@@ -101,7 +134,7 @@ const SidebarWithHeader = () => {
           </Text>
 
           <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
-            <DesktopNav />
+            <DesktopNav navItems={getMenuItems} />
           </Flex>
         </Flex>
 
@@ -187,7 +220,7 @@ const SidebarWithHeader = () => {
       </Flex>
 
       <Collapse in={isOpen} animateOpacity>
-        <MobileNav />
+        <MobileNav navItems={getMenuItems} />
       </Collapse>
       <Box overflowX='unset' overflowY='unset' mt={'85px'}>
         <Outlet />
@@ -198,17 +231,15 @@ const SidebarWithHeader = () => {
 
 export default SidebarWithHeader;
 
-const DesktopNav = () => {
+const DesktopNav = ({ navItems }: { navItems: NavItem[] }) => {
   const linkColor = useColorModeValue('gray.600', 'gray.200');
   const linkHoverColor = useColorModeValue('gray.800', 'white');
   const popoverContentBgColor = useColorModeValue('white', 'gray.800');
   const { user } = useAuth();
-  const [navItems, setNavItems] = useState(NAV_ITEMS);
 
   useEffect(() => {
     if (user.role == 'location-manager') {
-      const navItemsFiltered = navItems.filter((nav) => nav.label != 'Informes');
-      setNavItems(navItemsFiltered);
+      navItems = navItems.filter((nav) => nav.label != 'Informes');
     }
   }, [user]);
   return (
@@ -298,10 +329,10 @@ const DesktopSubNav = ({ label, subLabel }: NavItem) => {
   );
 };
 
-const MobileNav = () => {
+const MobileNav = ({ navItems }: { navItems: NavItem[] }) => {
   return (
     <Stack bg={useColorModeValue('white', 'gray.800')} p={4} display={{ md: 'none' }}>
-      {NAV_ITEMS.map((navItem) => (
+      {navItems.map((navItem) => (
         <MobileNavItem key={navItem.label} {...navItem} />
       ))}
     </Stack>
@@ -365,26 +396,3 @@ interface NavItem {
   to?: string;
   isNew: boolean;
 }
-
-const NAV_ITEMS: Array<NavItem> = [
-  {
-    label: 'Inicio',
-    to: './',
-    isNew: false,
-  },
-  {
-    label: 'Reservas',
-    to: './reservas',
-    isNew: false,
-  },
-  {
-    label: 'Rendimiento',
-    to: './performance',
-    isNew: false,
-  },
-  {
-    label: 'Informes',
-    to: './reports',
-    isNew: true,
-  },
-];
