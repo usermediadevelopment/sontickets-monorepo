@@ -41,7 +41,13 @@ export type SanityImageDimensions = {
 
 export type SocialMedia = {
   _type: "socialMedia";
-  platform?: "Facebook" | "Twitter" | "Instagram" | "LinkedIn" | "TikTok" | "YouTube";
+  platform?:
+    | "Facebook"
+    | "Twitter"
+    | "Instagram"
+    | "LinkedIn"
+    | "TikTok"
+    | "YouTube";
   url?: string;
 };
 
@@ -65,10 +71,65 @@ export type Review = {
 
 export type OpeningHour = {
   _type: "openingHour";
-  day?: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
-  openingTime?: "1:00" | "1:30" | "2:00" | "2:30" | "3:00" | "3:30" | "4:00" | "4:30" | "5:00" | "5:30" | "6:00" | "6:30" | "7:00" | "7:30" | "8:00" | "8:30" | "9:00" | "9:30" | "10:00" | "10:30" | "11:00" | "11:30" | "12:00" | "12:30";
+  day?:
+    | "Monday"
+    | "Tuesday"
+    | "Wednesday"
+    | "Thursday"
+    | "Friday"
+    | "Saturday"
+    | "Sunday";
+  openingTime?:
+    | "1:00"
+    | "1:30"
+    | "2:00"
+    | "2:30"
+    | "3:00"
+    | "3:30"
+    | "4:00"
+    | "4:30"
+    | "5:00"
+    | "5:30"
+    | "6:00"
+    | "6:30"
+    | "7:00"
+    | "7:30"
+    | "8:00"
+    | "8:30"
+    | "9:00"
+    | "9:30"
+    | "10:00"
+    | "10:30"
+    | "11:00"
+    | "11:30"
+    | "12:00"
+    | "12:30";
   openingTimeMeridiem?: "AM" | "PM";
-  closingTime?: "1:00" | "1:30" | "2:00" | "2:30" | "3:00" | "3:30" | "4:00" | "4:30" | "5:00" | "5:30" | "6:00" | "6:30" | "7:00" | "7:30" | "8:00" | "8:30" | "9:00" | "9:30" | "10:00" | "10:30" | "11:00" | "11:30" | "12:00" | "12:30";
+  closingTime?:
+    | "1:00"
+    | "1:30"
+    | "2:00"
+    | "2:30"
+    | "3:00"
+    | "3:30"
+    | "4:00"
+    | "4:30"
+    | "5:00"
+    | "5:30"
+    | "6:00"
+    | "6:30"
+    | "7:00"
+    | "7:30"
+    | "8:00"
+    | "8:30"
+    | "9:00"
+    | "9:30"
+    | "10:00"
+    | "10:30"
+    | "11:00"
+    | "11:30"
+    | "12:00"
+    | "12:30";
   closingTimeMeridiem?: "AM" | "PM";
   isClosed?: boolean;
 };
@@ -98,9 +159,11 @@ export type MenuItem = {
 export type MenuCategory = {
   _type: "menuCategory";
   categoryName?: string;
-  items?: Array<{
-    _key: string;
-  } & MenuItem>;
+  items?: Array<
+    {
+      _key: string;
+    } & MenuItem
+  >;
 };
 
 export type Location = {
@@ -137,6 +200,7 @@ export type Location = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "restaurant";
   };
+  phoneNumbers?: Array<string>;
   googlePlaceId?: string;
   country?: {
     _ref: string;
@@ -193,9 +257,11 @@ export type Location = {
     _type: "file";
   };
   urlMenuFile?: string;
-  schedule?: Array<{
-    _key: string;
-  } & OpeningHour>;
+  schedule?: Array<
+    {
+      _key: string;
+    } & OpeningHour
+  >;
   outstandingFeatures?: Array<string>;
   dietaryPreferences?: Array<string>;
   ambiance?: Array<string>;
@@ -295,9 +361,11 @@ export type Restaurant = {
     currency?: "COP" | "EUR" | "GBP";
   };
   contactEmail?: string;
-  socialMedia?: Array<{
-    _key: string;
-  } & SocialMedia>;
+  socialMedia?: Array<
+    {
+      _key: string;
+    } & SocialMedia
+  >;
   seo?: Seo;
   whatsappActive?: boolean;
   whatsappNumber?: string;
@@ -428,5 +496,29 @@ export type Slug = {
   source?: string;
 };
 
-export type AllSanitySchemaTypes = SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SocialMedia | Review | OpeningHour | MenuItem | MenuCategory | Location | ContactInfo | Geopoint | Area | Country | Restaurant | Seo | SanityFileAsset | City | Category | SanityImageCrop | SanityImageHotspot | SanityImageAsset | SanityAssetSourceData | SanityImageMetadata | Slug;
+export type AllSanitySchemaTypes =
+  | SanityImagePaletteSwatch
+  | SanityImagePalette
+  | SanityImageDimensions
+  | SocialMedia
+  | Review
+  | OpeningHour
+  | MenuItem
+  | MenuCategory
+  | Location
+  | ContactInfo
+  | Geopoint
+  | Area
+  | Country
+  | Restaurant
+  | Seo
+  | SanityFileAsset
+  | City
+  | Category
+  | SanityImageCrop
+  | SanityImageHotspot
+  | SanityImageAsset
+  | SanityAssetSourceData
+  | SanityImageMetadata
+  | Slug;
 export declare const internalGroqTypeReferenceTo: unique symbol;

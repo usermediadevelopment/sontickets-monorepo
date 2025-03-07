@@ -20,6 +20,8 @@ import Locations from '~/pages/shared/components/Locations';
 import { useAuth } from '~/hooks/useAuth';
 
 import WhatsatppLeads from './components/WhatsatppLeads';
+
+import { ButtonType, SBInteractionService } from '@package/sontickets-services';
 // Define types for our data
 interface ChartDataPoint {
   month: string;
@@ -53,7 +55,7 @@ export default function PerformanceDashboard() {
 
   // Tab data state
   const [tabData, setTabData] = useState<TabDataState>({
-    details: {
+    address: {
       metric: 1245,
       description: 'Leads de Whatsapp',
       chartData: [],
@@ -63,62 +65,16 @@ export default function PerformanceDashboard() {
       description: 'Clics en el botón de llamada desde tu Perfil de Negocio',
       chartData: [],
     },
-    reservations: {
-      metric: 156,
-      description: 'Reservas realizadas desde tu Perfil de Negocio',
-      chartData: [],
-    },
-    directions: {
+    share: {
       metric: 798,
-      description:
-        'Solicitudes de instrucciones sobre cómo llegar realizadas desde tu Perfil de Negocio',
-      chartData: [],
-    },
-    websiteClicks: {
-      metric: 432,
-      description: 'Clics en el sitio web desde tu Perfil de Negocio',
+      description: 'Compartidos realizados desde tu Perfil de Negocio',
       chartData: [],
     },
   });
 
-  // Helper function to get months between dates
-  const getMonthsBetweenDates = (startDate: Date, endDate: Date) => {
-    const months = [];
-    const monthNames = [
-      'ene',
-      'feb',
-      'mar',
-      'abr',
-      'may',
-      'jun',
-      'jul',
-      'ago',
-      'sep',
-      'oct',
-      'nov',
-      'dic',
-    ];
-
-    const currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-      const monthStr = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-      months.push({
-        label: monthStr,
-        date: new Date(currentDate),
-      });
-
-      // Move to next month
-      currentDate.setMonth(currentDate.getMonth() + 1);
-    }
-
-    return months;
-  };
-
   // Generate chart data based on the selected date range
-  const generateChartData = (range: { startDate: Date; endDate: Date }) => {
+  const generateChartData = async () => {
     // Generate months between start and end dates
-    const months = getMonthsBetweenDates(range.startDate, range.endDate);
 
     // Create new data for each tab
     const newTabData: TabDataState = {
@@ -127,86 +83,50 @@ export default function PerformanceDashboard() {
         description: 'Visitas a tu Perfil de Negocio',
         chartData: [],
       },
-      calls: {
-        metric: 0,
-        description: 'Llamadas realizadas desde tu Perfil de Negocio',
-        chartData: [],
-      },
-      reservations: {
-        metric: 0,
-        description: 'Reservas realizadas desde tu Perfil de Negocio',
-        chartData: [],
-      },
       directions: {
         metric: 0,
         description:
           'Solicitudes de instrucciones sobre cómo llegar realizadas desde tu Perfil de Negocio',
         chartData: [],
       },
-      websiteClicks: {
+      calls: {
         metric: 0,
-        description: 'Clics en el sitio web desde tu Perfil de Negocio',
+        description: 'Llamadas realizadas desde tu Perfil de Negocio',
         chartData: [],
       },
     };
 
-    // Generate random data for each tab and month
-    Object.keys(newTabData).forEach((tabKey) => {
-      const tabMetricMultiplier =
-        {
-          details: 5,
-          calls: 1.5,
-          reservations: 0.8,
-          directions: 4,
-          websiteClicks: 2.2,
-        }[tabKey] || 1;
-
-      newTabData[tabKey].chartData = months.map((month) => {
-        // Generate a value that's somewhat consistent but with variation
-        const baseValue = 50 + Math.floor(Math.random() * 100);
-        const value = Math.floor(baseValue * tabMetricMultiplier);
-
-        return {
-          month: month.label,
-          date: month.date,
-          value: value,
-        };
-      });
-
-      // Update the metric to be the sum of all values
-      newTabData[tabKey].metric = newTabData[tabKey].chartData.reduce(
-        (sum, item) => sum + item.value,
-        0
-      );
+    const response = await SBInteractionService.get({
+      restaurant_id: user.company?.id,
+      location_id: selectedLocation,
+      start_date: dateRange.startDate.toISOString(),
+      end_date: dateRange.endDate.toISOString(),
     });
 
-    return newTabData;
+    const interactions = response.data ?? [];
+
+    const calls = interactions.filter((interaction) => {
+      return interaction.button_type == ButtonType.CALL;
+    });
+
+    newTabData.calls.metric = calls.length;
+
+    const directions = interactions.filter((interaction) => {
+      return interaction.button_type == ButtonType.DIRECTION;
+    });
+
+    newTabData.directions.metric = directions.length;
+
+    setTabData(newTabData);
   };
 
   // Update chart data when date range changes
   useEffect(() => {
-    const newTabData = generateChartData(dateRange);
-    setTabData(newTabData);
-  }, [dateRange]);
+    generateChartData();
+  }, [dateRange, selectedLocation]);
 
   return (
     <Box>
-      {/* Header */}
-      {/*     <Flex
-        justify='space-between'
-        align='center'
-        p={4}
-        borderBottom='1px solid'
-        borderColor='gray.700'
-      >
-        <Flex align='center'>
-          <Heading size='md'>Rendimiento</Heading>
-        </Flex>
-        <Flex>
-          <IconButton aria-label='More options' variant='ghost' color='white' mr={2} />
-          <IconButton aria-label='Close' variant='ghost' color='white' />
-        </Flex>
-      </Flex> */}
       <Flex p={5}>
         {/* Date Range Selector */}
         <Box width={{ base: '100%', md: '250px' }}>
@@ -268,7 +188,7 @@ export default function PerformanceDashboard() {
                 px={4}
                 py={3}
               >
-                Llamadas
+                Direcciones
               </Tab>
 
               <Tab
@@ -281,7 +201,7 @@ export default function PerformanceDashboard() {
                 px={4}
                 py={3}
               >
-                Direcciones
+                LLamadas
               </Tab>
             </TabList>
 
@@ -305,9 +225,7 @@ export default function PerformanceDashboard() {
                         <Heading size='xl' mb={2}>
                           {tabData[key].metric}
                         </Heading>
-                        <Text color='gray.300' mb={6}>
-                          {tabData[key].description}
-                        </Text>
+                        <Text mb={6}>{tabData[key].description}</Text>
                         <Box h='300px'>
                           <PerformanceChart data={tabData[key].chartData} />
                         </Box>

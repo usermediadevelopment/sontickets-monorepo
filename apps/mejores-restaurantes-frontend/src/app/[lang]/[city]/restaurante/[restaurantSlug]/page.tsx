@@ -54,8 +54,15 @@ import {
   WhatsAppFormInputs,
 } from "@/components/WhatsAppDialogForm";
 
-import { SBLeadsService } from "@package/sontickets-services";
+import {
+  SBLeadsService,
+  SBInteractionService,
+} from "@package/sontickets-services";
+import { ButtonType } from "@package/sontickets-services";
 import WhatsappIcon from "@/components/icons/WhatsappIcon";
+import { PhoneNumbersDialog } from "@/components/PhoneNumbersDialog";
+
+const sbLeadsService = new SBLeadsService();
 
 const ImageSwiperComponent = lazy(
   () => import("@/components/ImageSwiperComponent")
@@ -80,6 +87,8 @@ export default function RestaurantPage({
 
   const [openDialogReservation, setOpenDialogReservation] = useState(false);
 
+  const [isOpenPhoneDialog, setIsOpenPhoneDialog] = useState(false);
+
   // --- State to handle opening/closing the new WhatsApp modal:
   const [openWhatsAppModal, setOpenWhatsAppModal] = useState(false);
 
@@ -91,8 +100,6 @@ export default function RestaurantPage({
 
   useEffect(() => {
     const handleScroll = () => {
-      console.log("window.scrollY", window.scrollY);
-      console.log("window.innerHeight", window.innerHeight);
       if (window.scrollY > window.innerHeight / 1.5) {
         setIsSticky(true);
       } else {
@@ -105,6 +112,12 @@ export default function RestaurantPage({
   }, []);
 
   const handleNavigate = () => {
+    SBInteractionService.create({
+      button_type: ButtonType.DIRECTION,
+      location_id: location?.externalId ?? "",
+      restaurant_id: location?.restaurant?.externalId ?? "",
+      screen_name: "restaurant",
+    });
     const addressB = location?.address + ", " + location?.name;
     const fallbackUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addressB)}`;
 
@@ -127,7 +140,30 @@ export default function RestaurantPage({
     setOpenDialogReservation(true);
   };
 
+  const handleCall = () => {
+    SBInteractionService.create({
+      button_type: ButtonType.CALL,
+      location_id: location?.externalId ?? "",
+      restaurant_id: location?.restaurant?.externalId ?? "",
+      screen_name: "restaurant",
+    });
+    if (
+      /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      /Android/i.test(navigator.userAgent)
+    ) {
+      window.location.href = `tel:${location?.phoneNumbers?.[0]}`;
+    } else {
+      setIsOpenPhoneDialog(true);
+    }
+  };
+
   const handleShare = () => {
+    SBInteractionService.create({
+      button_type: ButtonType.SHARE,
+      location_id: location?.externalId ?? "",
+      restaurant_id: location?.restaurant?.externalId ?? "",
+      screen_name: "restaurant",
+    });
     if (isDesktop) {
       const message = location?.seo?.metaDescription ?? "";
       const url = `https://wa.me/?text=${encodeURIComponent(message)} ${encodeURIComponent(
@@ -189,7 +225,6 @@ export default function RestaurantPage({
   }, [location?.schedule]);
 
   const onSubmittedWhatsAppForm = (lead: WhatsAppFormInputs) => {
-    const sbLeadsService = new SBLeadsService();
     sbLeadsService.create({
       ...lead,
       restaurantId: location?.restaurant?.externalId ?? "",
@@ -217,7 +252,7 @@ export default function RestaurantPage({
 
           <Button
             variant={"outline"}
-            onClick={handleNavigate}
+            onClick={handleCall}
             className=" px-4 py-2 rounded-[5px]"
           >
             <PhoneCall />
@@ -472,7 +507,7 @@ export default function RestaurantPage({
                       <div className="flex flex-1">
                         <Button
                           variant={"outline"}
-                          onClick={handleNavigate}
+                          onClick={handleCall}
                           className="flex flex-row  w-full"
                         >
                           <PhoneCall />
@@ -564,6 +599,13 @@ export default function RestaurantPage({
         locationName={location?.name ?? ""}
         locationUrl={typeof window !== "undefined" ? window.location.href : ""}
       />
+
+      {/* Pass isOpen and setIsOpen for outside control */}
+      <PhoneNumbersDialog
+        phoneNumbers={location?.phoneNumbers ?? []}
+        open={isOpenPhoneDialog}
+        onOpenChange={setIsOpenPhoneDialog}
+      />
     </div>
   );
 }
@@ -638,7 +680,7 @@ const CharacteristicsAndServices = ({
 
   return (
     <div>
-      <h3 className="font-bold text-lg">Características y servicios</h3>
+      <h3 className="font-bold text-lg mt-8">Características y servicios</h3>
       <div className="mt-5">
         <Accordion type="single" collapsible className="w-full">
           {services

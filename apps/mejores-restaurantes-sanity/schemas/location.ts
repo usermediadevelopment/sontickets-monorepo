@@ -66,6 +66,14 @@ export const locationSchema = defineType({
       to: [{type: 'restaurant'}],
     }),
 
+    // I woudl like to add phone numbers to the location, the user can select the
+    defineField({
+      name: 'phoneNumbers',
+      title: 'Phone Numbers',
+      type: 'array',
+      of: [{type: 'string'}],
+    }),
+
     defineField({
       name: 'googlePlaceId',
       title: 'Google Place ID',
