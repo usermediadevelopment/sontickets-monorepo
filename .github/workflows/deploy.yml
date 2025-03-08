@@ -12,7 +12,6 @@ jobs:
     # We'll define outputs we can use in later jobs:
     outputs:
       deploy_sontickets: ${{ steps.filter.outputs.sontickets }}
-      deploy_restaurantes: ${{ steps.filter.outputs.restaurantes }}
 
     steps:
       - name: Checkout repository
@@ -23,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: yarn
 
       - name: Install dependencies
@@ -40,11 +39,6 @@ jobs:
           # If Turborepo does NOT skip the build, it means there's a change.
           if yarn turbo run build --filter="apps/sontickets-frontend"; then
             echo "sontickets=true" >> $GITHUB_OUTPUT
-          fi
-
-          # Attempt a build for 'mejores-restaurantes-frontend' (Next.js).
-          if yarn turbo run build --filter="apps/mejores-restaurantes-frontend"; then
-            echo "restaurantes=true" >> $GITHUB_OUTPUT
           fi
 
   #########################################################################
@@ -78,31 +72,3 @@ jobs:
           firebase deploy \
             --token ${{ secrets.FIREBASE_TOKEN }} \
             --only hosting
-
-  #########################################################################
-  # Deployment Job for mejores-restaurantes-frontend (Next.js -> Vercel)
-  #########################################################################
-  deploy-restaurantes:
-    needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.deploy_restaurantes == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: yarn
-
-      - name: Install dependencies
-        run: yarn install
-
-      - name: Build Restaurantes (Next.js) with Turborepo
-        run: yarn turbo run build --filter="apps/mejores-restaurantes-frontend"
-
-      - name: Deploy to Vercel (Production)
-        run: |
-          cd apps/mejores-restaurantes-frontend
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
