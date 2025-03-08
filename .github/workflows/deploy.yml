@@ -1,0 +1,65 @@
+name: Deploy Monorepo Projects
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      # deploy_sontickets: ${{ steps.filter.outputs.sontickets }}
+      deploy_restaurantes: ${{ steps.filter.outputs.restaurantes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Full commit history for Turbo caching
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Detect changes with Turborepo
+        id: filter
+        run: |
+          # Attempt build for sontickets-frontend (Vite)
+          if yarn turbo run build --filter="apps/sontickets-frontend"; then
+            echo "deploy_sontickets=true" >> $GITHUB_ENV
+          fi
+
+          # Attempt build for mejores-restaurantes-frontend (Next.js)
+          if yarn turbo run build --filter="apps/mejores-restaurantes-frontend"; then
+            echo "deploy_restaurantes=true" >> $GITHUB_ENV
+          fi
+
+  deploy-restaurantes:
+    needs: detect-changes
+    if: env.deploy_restaurantes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --legacy-peer-deps
+
+      - name: Build mejores-restaurantes-frontend (Next.js) via Turborepo
+        run: yarn turbo run build --filter="apps/mejores-restaurantes-frontend"
+
+      - name: Deploy to Vercel
+        run: |
+          cd apps/mejores-restaurantes-frontend
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod

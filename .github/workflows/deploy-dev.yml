@@ -1,0 +1,93 @@
+name: Deploy Dev Monorepo Projects
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_sontickets: ${{ steps.filter.outputs.sontickets }}
+      deploy_restaurantes: ${{ steps.filter.outputs.restaurantes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Detect changes with Turborepo
+        id: filter
+        run: |
+          if yarn turbo run build --filter="apps/sontickets-frontend"; then
+            echo "deploy_sontickets=true" >> $GITHUB_ENV
+          fi
+
+          if yarn turbo run build --filter="apps/mejores-restaurantes-frontend"; then
+            echo "deploy_restaurantes=true" >> $GITHUB_ENV
+          fi
+
+  deploy-sontickets:
+    needs: detect-changes
+    if: env.deploy_sontickets == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build sontickets-frontend (dev)
+        run: yarn turbo run build:dev --filter="apps/sontickets-frontend"
+
+      - name: Deploy to Firebase Hosting (dev)
+        run: |
+          yarn global add firebase-tools
+          cd apps/sontickets-frontend
+          # Use a dev project or a different hosting site
+          firebase deploy \
+            --token ${{ secrets.FIREBASE_TOKEN_DEV }} \
+            --only hosting
+
+  deploy-restaurantes:
+    needs: detect-changes
+    if: env.deploy_restaurantes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build mejores-restaurantes-frontend (dev)
+        run: yarn turbo run build:dev --filter="apps/mejores-restaurantes-frontend"
+
+      - name: Deploy to Vercel (dev)
+        run: |
+          cd apps/mejores-restaurantes-frontend
+          # Possibly use a dev token or dev config
+          vercel --token ${{ secrets.VERCEL_TOKEN_DEV }} --prod
