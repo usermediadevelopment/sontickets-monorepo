@@ -1,21 +1,24 @@
-name: Deploy Monorepo Projects
+name: Deploy Production
 
 on:
   push:
     branches:
-      - main
+      - main # Only run this workflow for pushes to 'main' (production branch)
 
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+
+    # We'll define outputs we can use in later jobs:
     outputs:
-      # deploy_sontickets: ${{ steps.filter.outputs.sontickets }}
+      deploy_sontickets: ${{ steps.filter.outputs.sontickets }}
       deploy_restaurantes: ${{ steps.filter.outputs.restaurantes }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Full commit history for Turbo caching
+          fetch-depth: 0 # Ensure full git history for Turborepo caching
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -29,19 +32,28 @@ jobs:
       - name: Detect changes with Turborepo
         id: filter
         run: |
-          # Attempt build for sontickets-frontend (Vite)
+          # Initialize outputs to 'false' in case they don't change:
+          echo "sontickets=false" >> $GITHUB_OUTPUT
+          echo "restaurantes=false" >> $GITHUB_OUTPUT
+
+          # Attempt a build for 'sontickets-frontend' (Vite).
+          # If Turborepo does NOT skip the build, it means there's a change.
           if yarn turbo run build --filter="apps/sontickets-frontend"; then
-            echo "deploy_sontickets=true" >> $GITHUB_ENV
+            echo "sontickets=true" >> $GITHUB_OUTPUT
           fi
 
-          # Attempt build for mejores-restaurantes-frontend (Next.js)
+          # Attempt a build for 'mejores-restaurantes-frontend' (Next.js).
           if yarn turbo run build --filter="apps/mejores-restaurantes-frontend"; then
-            echo "deploy_restaurantes=true" >> $GITHUB_ENV
+            echo "restaurantes=true" >> $GITHUB_OUTPUT
           fi
 
-  deploy-restaurantes:
+  #########################################################################
+  # Deployment Job for sontickets-frontend (Vite -> Firebase)
+  #########################################################################
+  deploy-sontickets:
     needs: detect-changes
-    if: env.deploy_restaurantes == 'true'
+    # The condition checks the output from 'detect-changes' job
+    if: ${{ needs.detect-changes.outputs.deploy_sontickets == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -54,12 +66,43 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        run: yarn install --legacy-peer-deps
+        run: yarn install
 
-      - name: Build mejores-restaurantes-frontend (Next.js) via Turborepo
+      - name: Build Sontickets (Vite) with Turborepo
+        run: yarn turbo run build --filter="apps/sontickets-frontend"
+
+      - name: Deploy to Firebase Hosting (Production)
+        run: |
+          yarn global add firebase-tools
+          cd apps/sontickets-frontend
+          firebase deploy \
+            --token ${{ secrets.FIREBASE_TOKEN }} \
+            --only hosting
+
+  #########################################################################
+  # Deployment Job for mejores-restaurantes-frontend (Next.js -> Vercel)
+  #########################################################################
+  deploy-restaurantes:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.deploy_restaurantes == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build Restaurantes (Next.js) with Turborepo
         run: yarn turbo run build --filter="apps/mejores-restaurantes-frontend"
 
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel (Production)
         run: |
           cd apps/mejores-restaurantes-frontend
           vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
