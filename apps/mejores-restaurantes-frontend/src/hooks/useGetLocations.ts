@@ -1,15 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { client } from "@/config/sanity/client";
-import { getEnabledValueForEnv } from "@/lib/utils";
+import { getPreviewValueForQuery } from "@/lib/utils";
 
 import { SLocation } from "@/types/sanity.custom.type";
 import _ from "lodash";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const useGetLocations = () => {
   const [locations, setLocations] = useState<SLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const searchParams = useSearchParams();
 
   const params = useParams();
 
@@ -18,6 +19,7 @@ const useGetLocations = () => {
 
   const getLocations = async () => {
     setIsLoading(true);
+    const preview = searchParams.get("preview") ?? "";
     const categoryQuery = `&& 
         "${categorySlug}" in restaurant->categories[]->slug.current`;
     /*     const areaQuery = `&&  area->slug.current == "${areaSlug}"`; */
@@ -25,7 +27,7 @@ const useGetLocations = () => {
     const cityQuery = `&& city->slug.current == "${citySlug}"`;
     const LOCATIONS_QUERY = `
         *[
-        _type == "location"  ${citySlug && citySlug != "todas-ciudades" ? cityQuery : ""}  ${categorySlug && categorySlug != "todas-categorias" ? categoryQuery : ""} && enabled == ${getEnabledValueForEnv()}
+        _type == "location"  ${citySlug && citySlug != "todas-ciudades" ? cityQuery : ""}  ${categorySlug && categorySlug != "todas-categorias" ? categoryQuery : ""} && ${getPreviewValueForQuery(preview)}
         ]{
         ...,
         "city": city->{

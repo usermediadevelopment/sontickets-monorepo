@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google";
 import MainLayout from "@/components/MainLayout";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -42,9 +43,11 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="es">
       <GoogleTagManager gtmId="GTM-MV333992" />
       <body className={`${poppins.className} antialiased`}>
-        <UserPreferencesProvider>
-          <MainLayout>{children}</MainLayout>
-        </UserPreferencesProvider>
+        <Suspense>
+          <UserPreferencesProvider>
+            <MainLayout>{children}</MainLayout>
+          </UserPreferencesProvider>
+        </Suspense>
       </body>
     </html>
   );

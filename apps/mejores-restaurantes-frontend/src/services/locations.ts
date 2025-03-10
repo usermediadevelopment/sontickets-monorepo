@@ -1,11 +1,12 @@
 import { client } from "@/config/sanity/client";
-import { getEnabledValueForEnv } from "@/lib/utils";
+import { getPreviewValueForQuery } from "@/lib/utils";
+
 import { SLocation } from "@/types/sanity.custom.type";
 
-export const getLocationBySlug = async (locationSlug: string) => {
+export const getLocationBySlug = async (locationSlug: string, preview = "") => {
   const LOCATIONS_QUERY = `
         *[
-        _type == "location" && slug.current == "${locationSlug}" && enabled == ${getEnabledValueForEnv()}
+        _type == "location" && slug.current == "${locationSlug}" && (${getPreviewValueForQuery(preview)})
         ]{
         ...,
         "city": city->{

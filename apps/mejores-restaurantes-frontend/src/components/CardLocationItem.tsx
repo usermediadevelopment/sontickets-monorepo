@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { DialogReservation } from "./DialogReservation";
 import Link from "next/link";
 import { PortableText, PortableTextReactComponents } from "next-sanity";
+import { useSearchParams } from "next/navigation";
 
 export const components: Partial<PortableTextReactComponents> = {
   block: {
@@ -23,6 +24,8 @@ type CardLocationItemProps = {
 const CardLocationItem = ({ location }: CardLocationItemProps) => {
   const restaurant = location.restaurant;
 
+  const searchParams = useSearchParams();
+
   const [openReservationModal, setOpenReservationModal] =
     useState<boolean>(false);
 
@@ -31,11 +34,14 @@ const CardLocationItem = ({ location }: CardLocationItemProps) => {
   };
 
   const restaurantDetailUrl = useMemo(() => {
+    const searchQuery = searchParams.toString()
+      ? `?${searchParams.toString()}`
+      : "";
     const city = location.city?.slug?.current;
 
-    const newPath = `/es/${city}/restaurante/${location?.slug?.current}`;
+    const newPath = `/es/${city}/restaurante/${location?.slug?.current}${searchQuery}`;
     return newPath;
-  }, [location]);
+  }, [location, searchParams]);
 
   return (
     <div className="w-full">

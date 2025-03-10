@@ -24,6 +24,7 @@ export default function IndexPage() {
       <h2 className="text-2xl font-bold mb-6 text-center">
         Mejores Restaurantes
       </h2>
+
       <ListLocations />
     </div>
   );

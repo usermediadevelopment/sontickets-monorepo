@@ -7,7 +7,7 @@ import { Search, ChevronDown, MapPin, Instagram, MenuIcon } from "lucide-react";
 import { useCities } from "@/hooks/useCities";
 import { useCategories } from "@/hooks/useCategories";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import _ from "lodash";
 import { Input } from "./ui/input";
@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { SCategory, SCity } from "@/types/sanity.custom.type";
+import useCustomRouter from "@/hooks/useCustomRouter";
 
 export default function MainLayout({
   children,
@@ -34,7 +35,7 @@ export default function MainLayout({
 }) {
   const cities = useCities();
   const categories = useCategories();
-  const router = useRouter();
+  const router = useCustomRouter();
   const params = useParams();
 
   const {

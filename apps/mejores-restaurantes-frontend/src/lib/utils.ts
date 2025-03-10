@@ -13,3 +13,14 @@ export const getEnabledValueForEnv = () => {
     return "true";
   }
 };
+
+export const getPreviewValueForQuery = (preview = "") => {
+  let query = "enabled == true";
+
+  if (preview == "showDisabled") {
+    query = "enabled == false";
+  } else if (preview == "showBoth") {
+    query = "enabled in [true, false]";
+  }
+  return query;
+};
