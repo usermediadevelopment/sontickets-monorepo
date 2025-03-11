@@ -1,74 +1,32 @@
-name: Deploy Production
+name: Deploy Development
 
 on:
   push:
-    branches:
-      - main # Only run this workflow for pushes to 'main' (production branch)
+    # Trigger on any branch except main
+    branches-ignore:
+      - main
 
 jobs:
-  detect-changes:
+  deploy-sanity:
     runs-on: ubuntu-latest
-
-    # We'll define outputs we can use in later jobs:
-    outputs:
-      deploy_sontickets: ${{ steps.filter.outputs.sontickets }}
-
+    environment: Preview
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Ensure full git history for Turborepo caching
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: yarn
 
       - name: Install dependencies
+        working-directory: apps/mejores-restaurantes-sanity
         run: yarn install
 
-      - name: Detect changes with Turborepo
-        id: filter
-        run: |
-          # Initialize outputs to 'false' in case they don't change:
-          echo "sontickets=false" >> $GITHUB_OUTPUT
-          echo "restaurantes=false" >> $GITHUB_OUTPUT
-
-          # Attempt a build for 'sontickets-frontend' (Vite).
-          # If Turborepo does NOT skip the build, it means there's a change.
-          if yarn turbo run build --filter="apps/sontickets-frontend"; then
-            echo "sontickets=true" >> $GITHUB_OUTPUT
-          fi
-
-  #########################################################################
-  # Deployment Job for sontickets-frontend (Vite -> Firebase)
-  #########################################################################
-  deploy-sontickets:
-    needs: detect-changes
-    # The condition checks the output from 'detect-changes' job
-    if: ${{ needs.detect-changes.outputs.deploy_sontickets == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: yarn
-
-      - name: Install dependencies
-        run: yarn install
-
-      - name: Build Sontickets (Vite) with Turborepo
-        run: yarn turbo run build --filter="apps/sontickets-frontend"
-
-      - name: Deploy to Firebase Hosting (Production)
-        run: |
-          yarn global add firebase-tools
-          cd apps/sontickets-frontend
-          firebase deploy \
-            --token ${{ secrets.FIREBASE_TOKEN }} \
-            --only hosting
+      - name: Deploy Sanity Studio (Dev)
+        working-directory: apps/mejores-restaurantes-sanity
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+          SANITY_STUDIO_API_DATASET: ${{ vars.SANITY_STUDIO_API_DATASET }}
+          SANITY_STUDIO_HOST: ${{ vars.SANITY_STUDIO_HOST }}
+        run: yarn deploy

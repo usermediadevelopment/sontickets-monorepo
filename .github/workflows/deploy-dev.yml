@@ -5,6 +5,9 @@ on:
     # Trigger on any branch except main
     branches-ignore:
       - main
+    # Only trigger if files in the Sanity folder have changed
+    paths:
+      - "apps/mejores-restaurantes-sanity/**"
 
 jobs:
   deploy-sanity:
