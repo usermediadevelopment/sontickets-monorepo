@@ -14,10 +14,6 @@ jobs:
     name: Build and Deploy
     runs-on: ubuntu-latest
     environment: Preview
-    env:
-      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-      SANITY_STUDIO_API_DATASET: ${{ vars.SANITY_STUDIO_API_DATASET }}
-      SANITY_STUDIO_HOST: ${{ vars.SANITY_STUDIO_HOST }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -60,6 +56,10 @@ jobs:
         run: yarn turbo run build --filter=apps/mejores-restaurantes-sanity...
 
       - name: Deploy Sanity Studio
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+          SANITY_STUDIO_API_DATASET: ${{ vars.SANITY_STUDIO_API_DATASET }}
+          SANITY_STUDIO_HOST: ${{ vars.SANITY_STUDIO_HOST }}
         if: steps.sanity-changes.outputs.sanity == 'true'
         working-directory: apps/mejores-restaurantes-sanity
         run: yarn deploy
