@@ -1,4 +1,4 @@
-name: Deploy Development
+name: Deploy Sanity Studio
 
 on:
   push:
@@ -10,26 +10,59 @@ on:
       - "apps/mejores-restaurantes-sanity/**"
 
 jobs:
-  deploy-sanity:
+  deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
-    environment: Preview
+    env:
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+      SANITY_STUDIO_API_DATASET: ${{ vars.SANITY_STUDIO_API_DATASET }}
+      SANITY_STUDIO_HOST: ${{ vars.SANITY_STUDIO_HOST }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "16.x"
 
-      - name: Install dependencies
-        working-directory: apps/mejores-restaurantes-sanity
+      - name: Check for changes in Sanity Studio
+        id: sanity-changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            sanity:
+              - 'apps/mejores-restaurantes-sanity/**'
+
+      - name: Cache Node Modules
+        if: steps.sanity-changes.outputs.sanity == 'true'
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Cache Turbo Build Cache
+        if: steps.sanity-changes.outputs.sanity == 'true'
+        uses: actions/cache@v3
+        with:
+          path: .turbo
+          key: turbo-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Dependencies
+        if: steps.sanity-changes.outputs.sanity == 'true'
         run: yarn install
 
-      - name: Deploy Sanity Studio (Dev)
+      - name: Build Sanity Studio with Turbo
+        if: steps.sanity-changes.outputs.sanity == 'true'
+        run: yarn turbo run build --filter=apps/mejores-restaurantes-sanity...
+
+      - name: Deploy Sanity Studio
+        if: steps.sanity-changes.outputs.sanity == 'true'
         working-directory: apps/mejores-restaurantes-sanity
-        env:
-          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-          SANITY_STUDIO_API_DATASET: ${{ vars.SANITY_STUDIO_API_DATASET }}
-          SANITY_STUDIO_HOST: ${{ vars.SANITY_STUDIO_HOST }}
         run: yarn deploy
+
+      - name: Skip Deploy
+        if: steps.sanity-changes.outputs.sanity != 'true'
+        run: echo "No changes detected in Sanity Studio. Skipping deployment."
