@@ -119,18 +119,10 @@ export default function RestaurantPage({
       screen_name: "restaurant",
     });
     const addressB = location?.address + ", " + location?.name;
-    const fallbackUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addressB)}`;
+    let appUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addressB)}`;
 
-    let appUrl;
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      appUrl =
-        "intent://maps.google.com/maps?daddr=${encodeURIComponent(addressB)}#Intent;scheme=http;package=com.google.android.apps.maps;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end";
-    } else if (/Android/i.test(navigator.userAgent)) {
-      appUrl = `intent://maps.google.com/maps?daddr=${encodeURIComponent(addressB)}#Intent;scheme=http;package=com.google.android.apps.maps;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
-    } else {
-      // If not iOS or Android, just open the fallback right away
-      window.open(appUrl, "_blank");
-      return;
+    if (/Android/i.test(navigator.userAgent)) {
+      appUrl = `intent://maps.google.com/maps?daddr=${encodeURIComponent(addressB)}#Intent;scheme=http;package=com.google.android.apps.maps;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(appUrl)};end`;
     }
 
     // go a new _blank window to try to open the native app
