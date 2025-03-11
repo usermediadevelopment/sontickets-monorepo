@@ -123,17 +123,18 @@ export default function RestaurantPage({
 
     let appUrl;
     if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      appUrl = "comgooglemaps://?q=" + encodeURIComponent(addressB);
+      appUrl =
+        "intent://maps.google.com/maps?daddr=${encodeURIComponent(addressB)}#Intent;scheme=http;package=com.google.android.apps.maps;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end";
     } else if (/Android/i.test(navigator.userAgent)) {
       appUrl = `intent://maps.google.com/maps?daddr=${encodeURIComponent(addressB)}#Intent;scheme=http;package=com.google.android.apps.maps;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
     } else {
       // If not iOS or Android, just open the fallback right away
-      window.location.href = fallbackUrl;
+      window.open(appUrl, "_blank");
       return;
     }
 
-    // Try opening the native app URL
-    window.location.href = appUrl;
+    // go a new _blank window to try to open the native app
+    window.open(appUrl, "_blank");
   };
 
   const handleOpenReservationDialog = () => {
