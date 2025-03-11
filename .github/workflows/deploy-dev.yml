@@ -13,6 +13,7 @@ jobs:
   deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
+    environment: Preview
     env:
       SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
       SANITY_STUDIO_API_DATASET: ${{ vars.SANITY_STUDIO_API_DATASET }}
