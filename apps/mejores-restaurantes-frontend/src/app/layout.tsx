@@ -1,10 +1,9 @@
-import { UserPreferencesProvider } from "@/providers/UserPreferencesProvider";
 import "./globals.css";
 import { Poppins } from "next/font/google";
-import MainLayout from "@/components/MainLayout";
-import { GoogleTagManager } from "@next/third-parties/google";
+
 import { Metadata } from "next";
-import { Suspense } from "react";
+import MainLayoutV2 from "@/layout/MainLayoutV2";
+import { ReactNode } from "react";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -34,20 +33,21 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+interface LayoutProps {
+  children: ReactNode;
+  params: Promise<{
+    lang: string;
+    rest: string[];
+  }>;
+}
+export default async function RootLayout({ children, params }: LayoutProps) {
+  const paramsCar = await params;
+
+  console.log("RootLayout", paramsCar.lang);
   return (
     <html suppressHydrationWarning lang="es">
-      <GoogleTagManager gtmId="GTM-MV333992" />
       <body className={`${poppins.className} antialiased`}>
-        <Suspense>
-          <UserPreferencesProvider>
-            <MainLayout>{children}</MainLayout>
-          </UserPreferencesProvider>
-        </Suspense>
+        <MainLayoutV2 params={params}>{children}</MainLayoutV2>
       </body>
     </html>
   );

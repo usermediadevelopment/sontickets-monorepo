@@ -78,14 +78,14 @@ const CardLocationItem = ({ location }: CardLocationItemProps) => {
           <Link href={restaurantDetailUrl} className="my-0 p-0">
             <div className="flex-1">
               <h3 className="text-xl font-bold">{location.name}</h3>
-              <p className="text-gray-600 mt-2 line-clamp-2">
+              <div className="text-gray-600 mt-2 line-clamp-2">
                 {location?.description && (
                   <PortableText
                     value={location.description}
                     components={components}
                   />
                 )}
-              </p>
+              </div>
             </div>
           </Link>
 

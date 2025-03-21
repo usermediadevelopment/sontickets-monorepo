@@ -1,18 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { client } from "@/config/sanity/client";
+
+import { getCities } from "@/services/cities";
 
 import { SCity } from "@/types/sanity.custom.type";
 import { useEffect, useState } from "react";
 
 export const useCities = () => {
-  const CITIES_QUERY = `*[_type == "city"]`;
   const [cities, setCities] = useState<SCity[]>([]);
 
-  const getCities = async () => {
+  const getCitiesFromDb = async () => {
     try {
-      const citiesResponse = await client.fetch(CITIES_QUERY);
+      const citiesResponse = await getCities();
 
-      setCities(citiesResponse as SCity[]);
+      setCities(citiesResponse);
     } catch (err) {
       console.error("Error fetching cities:", err);
     } finally {
@@ -20,7 +20,7 @@ export const useCities = () => {
   };
 
   useEffect(() => {
-    getCities();
+    getCitiesFromDb();
   }, []);
 
   return cities;
