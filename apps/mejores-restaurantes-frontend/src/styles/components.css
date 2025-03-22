@@ -1,0 +1,210 @@
+/**
+ * Direct CSS Components using CSS Variables
+ * 
+ * This file provides examples of directly styling components using CSS variables
+ * rather than Tailwind utility classes. These can be used alongside Tailwind
+ * or as an alternative when more direct control is needed.
+ */
+
+/* Button Styles */
+.btn-direct {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  padding: var(--spacing-2) var(--spacing-4);
+  height: var(--spacing-10);
+}
+
+.btn-direct:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px hsl(var(--color-ring));
+}
+
+.btn-direct:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.btn-direct-primary {
+  background-color: var(--color-primary-500);
+  color: white;
+}
+
+.btn-direct-primary:hover {
+  background-color: var(--color-primary-600);
+}
+
+.btn-direct-secondary {
+  background-color: var(--color-secondary-500);
+  color: white;
+}
+
+.btn-direct-secondary:hover {
+  background-color: var(--color-secondary-600);
+}
+
+.btn-direct-destructive {
+  background-color: var(--color-error-500);
+  color: white;
+}
+
+.btn-direct-destructive:hover {
+  background-color: var(--color-error-600);
+}
+
+.btn-direct-outline {
+  background-color: transparent;
+  border: 1px solid var(--color-gray-300);
+  color: var(--color-gray-700);
+}
+
+.btn-direct-outline:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-900);
+}
+
+/* Card Styles */
+.card-direct {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-200);
+  background-color: white;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-direct-header {
+  padding: var(--spacing-6);
+}
+
+.card-direct-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.card-direct-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-1-5);
+}
+
+.card-direct-content {
+  padding: var(--spacing-6);
+}
+
+.card-direct-footer {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-6);
+  padding-top: 0;
+}
+
+/* Typography Styles */
+.heading-direct-1 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+@media (min-width: 1024px) {
+  .heading-direct-1 {
+    font-size: var(--font-size-5xl);
+  }
+}
+
+.heading-direct-2 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  border-bottom: 1px solid var(--color-gray-200);
+  padding-bottom: var(--spacing-2);
+  transition-property: color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.heading-direct-3 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.body-direct {
+  font-size: var(--font-size-base);
+  line-height: 1.75;
+}
+
+.body-direct-large {
+  font-size: var(--font-size-lg);
+  line-height: 1.75;
+}
+
+.body-direct-small {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.display-direct-1 {
+  font-size: var(--font-size-6xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+/* Form Styles */
+.form-direct-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+}
+
+.form-direct-control {
+  display: flex;
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-300);
+  background-color: transparent;
+  padding: var(--spacing-3) var(--spacing-3);
+  font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-sm);
+  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.form-direct-control::placeholder {
+  color: var(--color-gray-400);
+}
+
+.form-direct-control:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-500);
+}
+
+.form-direct-control:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.form-direct-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.form-direct-message {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error-500);
+} 

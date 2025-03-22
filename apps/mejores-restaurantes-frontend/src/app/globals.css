@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import theme variables and component styles */
+@import '../styles/theme-variables.css';
+@import '../styles/components.css';
+
 @layer base {
   :root {
     --background: 0 0% 100%;
