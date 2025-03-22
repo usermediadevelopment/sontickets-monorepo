@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "title": "Mejores Restaurantes",
+    "description": "Encuentra los mejores restaurantes en tu ciudad"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "cities": "Ciudades",
+    "neighborhoods": "Barrios",
+    "amenities": "Servicios"
+  }
+} 

@@ -24,3 +24,21 @@ export const getPreviewValueForQuery = (preview = "") => {
   }
   return query;
 };
+
+// Theme utility functions
+export type Theme = "dark" | "light" | "system";
+
+export function isSystemDarkTheme(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+export function getThemeFromStorage(): Theme {
+  if (typeof window === "undefined") return "system";
+  return (localStorage.getItem("theme") as Theme) || "system";
+}
+
+export function setThemeInStorage(theme: Theme): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("theme", theme);
+}

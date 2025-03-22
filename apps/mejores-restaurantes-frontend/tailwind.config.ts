@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import { fontFamily } from "tailwindcss/defaultTheme";
+import animatePlugin from "tailwindcss-animate";
 
 const config: Config = {
     darkMode: ["class"],
@@ -9,6 +11,9 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			sans: ["Poppins", ...fontFamily.sans],
+  		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -80,6 +85,6 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animatePlugin],
 };
 export default config;

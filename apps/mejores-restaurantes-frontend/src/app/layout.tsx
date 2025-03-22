@@ -1,4 +1,5 @@
 import { UserPreferencesProvider } from "@/providers/UserPreferencesProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import "./globals.css";
 import { Poppins } from "next/font/google";
 import MainLayout from "@/components/MainLayout";
@@ -44,9 +45,11 @@ export default function RootLayout({
       <GoogleTagManager gtmId="GTM-MV333992" />
       <body className={`${poppins.className} antialiased`}>
         <Suspense>
-          <UserPreferencesProvider>
-            <MainLayout>{children}</MainLayout>
-          </UserPreferencesProvider>
+          <ThemeProvider>
+            <UserPreferencesProvider>
+              <MainLayout>{children}</MainLayout>
+            </UserPreferencesProvider>
+          </ThemeProvider>
         </Suspense>
       </body>
     </html>

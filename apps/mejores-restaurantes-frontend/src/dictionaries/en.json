@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "title": "Best Restaurants",
+    "description": "Find the best restaurants in your city"
+  },
+  "navigation": {
+    "home": "Home",
+    "cities": "Cities",
+    "neighborhoods": "Neighborhoods",
+    "amenities": "Amenities"
+  }
+} 

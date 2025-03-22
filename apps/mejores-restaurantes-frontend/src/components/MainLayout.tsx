@@ -27,6 +27,7 @@ import {
 } from "./ui/dropdown-menu";
 import { SCategory, SCity } from "@/types/sanity.custom.type";
 import useCustomRouter from "@/hooks/useCustomRouter";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 
 export default function MainLayout({
   children,
@@ -113,6 +114,8 @@ export default function MainLayout({
             </div>
           </div>
           <div className="flex flex-row items-center justify-end space-x-2">
+            <ThemeSwitcher className="mr-2" />
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
