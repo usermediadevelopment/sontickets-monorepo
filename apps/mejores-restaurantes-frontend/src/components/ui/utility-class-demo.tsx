@@ -36,7 +36,7 @@ export function UtilityClassDemo() {
         
         <div className="mt-8">
           <h2 className="heading-2">Buttons & Badges</h2>
-          <div className="mt-4 grid-cols-4">
+          <div className="mt-4 layout-grid-4">
             <button className="btn-primary">Primary Button</button>
             <button className="btn-secondary">Secondary Button</button>
             <button className="btn-destructive">Destructive Button</button>
@@ -55,7 +55,7 @@ export function UtilityClassDemo() {
         
         <div className="mt-8">
           <h2 className="heading-2">Cards</h2>
-          <div className="grid-cols-3">
+          <div className="layout-grid-3">
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">Card Title</h3>
