@@ -11,7 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search} from "lucide-react";
+import { Search } from "lucide-react";
+
+
+import { getNearestCity } from "@/services/sanity/cities";
+import { SCity } from "@/types/sanity.custom.type";
 
 type CityValue = "all" | "lima" | "arequipa" | "cusco";
 
@@ -21,17 +25,34 @@ export default function SearchSection() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setLocationError] = useState<string>("");
+  const [nearestCity, setNearestCity] = useState<SCity | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Only request location if we don't have it yet
-    if (!location && navigator.geolocation) {
+
+      setIsLoading(true);
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
+        async (position) => {
+          console.log('position', position)
+          const coords = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-          });
-          setLocationError("");
+          };
+
+          console.log("coords",coords)
+          setLocation(coords);
+          
+          try {
+            // Get the nearest city based on user's location
+            const city = await getNearestCity(coords.lat, coords.lng);
+            console.log(city)
+       
+          } catch (error) {
+            console.error("Error fetching nearest city:", error);
+          } finally {
+            setIsLoading(false);
+          }
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -50,15 +71,16 @@ export default function SearchSection() {
           }
         }
       );
-    }
+  
   }, []); // Empty dependency array means this runs once on mount
 
   const handleSearch = () => {
-    // TODO: Implement search functionality
+    // TODO: Implement search functionality using getRestaurantsNearLocation
     console.log({
       location,
       selectedCity,
-      searchQuery
+      searchQuery,
+      nearestCity
     });
   };
 
@@ -85,6 +107,7 @@ export default function SearchSection() {
                 <Select
                   value={selectedCity}
                   onValueChange={(value: CityValue) => setSelectedCity(value)}
+                  disabled={isLoading}
                 >
                   <SelectTrigger className="w-full" aria-label="Ciudad">
                     <SelectValue placeholder="Selecciona una ciudad" />
@@ -109,16 +132,25 @@ export default function SearchSection() {
                     onKeyPress={handleKeyPress}
                     className="pl-8"
                     aria-label="Término de búsqueda"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="bg-primary hover:bg-primary/90">
-                Buscar
+              <Button 
+                type="submit" 
+                className="bg-primary hover:bg-primary/90"
+                disabled={isLoading}
+              >
+                {isLoading ? "Localizando..." : "Buscar"}
               </Button>
             </form>
 
-            
+            {nearestCity && (
+              <p className="text-sm text-muted-foreground mt-4">
+                {`Mostrando resultados cerca de ${nearestCity.name} (${nearestCity.distance.toFixed(1)}km)`}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
