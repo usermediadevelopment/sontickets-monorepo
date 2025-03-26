@@ -9,22 +9,22 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="px-20 sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-16 items-center justify-between container mx-auto px-4 ">
         <div className="flex items-center gap-2">
 
             <Image 
-              src="/logo.svg" 
+              src="/logo.png" 
               alt="Mejores Restaurantes Logo" 
-              width={40} 
+              width={130} 
               height={40}
-              className="h-8 w-8"
+          
               priority
             />
       
         </div>
         
-        <nav className="hidden md:flex items-center gap-6">
+     {/*    <nav className="hidden md:flex items-center gap-6">
           <Link 
             href="/about"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
@@ -43,7 +43,7 @@ export function Header() {
           >
             Blog
           </Link>
-        </nav>
+        </nav> */}
         
         <div className="flex items-center gap-2">
           <Button 
@@ -86,7 +86,7 @@ export function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden container py-4 border-t">
           <nav className="flex flex-col space-y-4">
-            <Link 
+           {/*  <Link 
               href="/about"
               className="text-sm font-medium text-muted-foreground hover:text-primary"
               onClick={() => setIsMobileMenuOpen(false)}
@@ -106,7 +106,7 @@ export function Header() {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Blog
-            </Link>
+            </Link> */}
             <div className="flex flex-col space-y-2 pt-2">
               <Button variant="outline" size="sm">
                 Log in
