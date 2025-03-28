@@ -19,25 +19,6 @@ import {
 import { useCities } from "@/hooks/useCities";
 import { SCity } from "@/types/sanity.custom.type";
 
-// Mock data for cities
-type City = {
-  value: string;
-  label: string;
-};
-
-const cities: City[] = [
-  { value: "madrid", label: "Madrid" },
-  { value: "barcelona", label: "Barcelona" },
-  { value: "valencia", label: "Valencia" },
-  { value: "seville", label: "Seville" },
-  { value: "bilbao", label: "Bilbao" },
-  { value: "malaga", label: "Málaga" },
-  { value: "granada", label: "Granada" },
-  { value: "alicante", label: "Alicante" },
-  { value: "san-sebastian", label: "San Sebastián" },
-  { value: "toledo", label: "Toledo" },
-];
-
 export function CitySelector() {
   const [open, setOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState<SCity | null>(null);

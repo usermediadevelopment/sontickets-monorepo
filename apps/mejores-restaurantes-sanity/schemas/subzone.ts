@@ -1,21 +1,14 @@
 import {defineType, defineField} from 'sanity'
 
-export const areaSchema = defineType({
-  name: 'area',
-  title: 'Zone',
+export const subzoneSchema = defineType({
+  name: 'subzone',
+  title: 'Subzone',
   type: 'document',
   fields: [
     defineField({
       name: 'name',
-      title: 'Zone Name',
+      title: 'Subzone Name',
       type: 'string',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'city',
-      title: 'City',
-      type: 'reference',
-      to: [{type: 'city'}],
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -29,15 +22,22 @@ export const areaSchema = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'zone',
+      title: 'Zone',
+      type: 'reference',
+      to: [{type: 'area'}],
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'description',
       title: 'Description',
       type: 'text',
     }),
     defineField({
       name: 'isPopular',
-      title: 'Popular Zone',
+      title: 'Popular Subzone',
       type: 'boolean',
-      description: 'Mark this zone as popular or well-known',
+      description: 'Mark this subzone as popular or well-known',
       initialValue: false,
     }),
   ],

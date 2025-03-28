@@ -1,10 +1,12 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
-
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemas'
-
 import {googleMapsInput} from '@sanity/google-maps-input'
+
+// Import our custom structure
+import {structure} from './structure'
+import {getDefaultDocumentNode} from './structure/defaultDocumentNode'
 
 export default defineConfig({
   name: 'default',
@@ -14,7 +16,10 @@ export default defineConfig({
   dataset: process.env.SANITY_STUDIO_API_DATASET || 'production',
 
   plugins: [
-    structureTool(),
+    structureTool({
+      structure,
+      defaultDocumentNode: getDefaultDocumentNode,
+    }),
     visionTool(),
     googleMapsInput({
       defaultLocale: 'es',
