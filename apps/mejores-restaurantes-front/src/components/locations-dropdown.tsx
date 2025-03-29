@@ -1,13 +1,18 @@
-"use client"
-import { MapPin, Search } from "lucide-react"
+"use client";
+import { Location } from "@/lib/types";
+import { MapPin, Search } from "lucide-react";
 
 interface SearchDropdownProps {
-  items: string[]
-  onSelect: (item: string) => void
-  isMobile?: boolean
+  items: Location[];
+  onSelect: (item: Location) => void;
+  isMobile?: boolean;
 }
 
-export default function SearchDropdown({ items, onSelect, isMobile = false }: SearchDropdownProps) {
+export default function LocationsDropdown({
+  items,
+  onSelect,
+  isMobile = false,
+}: SearchDropdownProps) {
   return (
     <div
       className={`
@@ -29,11 +34,10 @@ export default function SearchDropdown({ items, onSelect, isMobile = false }: Se
             ) : (
               <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
             )}
-            <span className="truncate">{item}</span>
+            <span className="truncate">{item.name}</span>
           </li>
         ))}
       </ul>
     </div>
-  )
+  );
 }
-

@@ -4,14 +4,10 @@ import type { Restaurant } from "./types";
 export const mockRestaurants: Restaurant[] = [
   {
     name: "La Trattoria Italiana",
-    location: {
-      city: "Bogotá",
-      neighborhood: "Chapinero",
-      zone: {
-        name: "Chapinero Alto",
-        subzones: ["Chapinero Central", "Chapinero Alto"],
-      },
-    },
+    country: "Colombia",
+    city: "Bogotá",
+    zone: "Chapinero",
+    subzone: "Chapinero Alto",
     distance: "A 2.5 kilómetros de ti",
     cuisine: "Italiana",
     priceRange: "$$",
@@ -28,14 +24,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "El Taquito Mexicano",
-    location: {
-      city: "Medellín",
-      neighborhood: "El Poblado",
-      zone: {
-        name: "Zona Rosa",
-        subzones: ["Parque Lleras", "Calle 10"],
-      },
-    },
+    country: "Colombia",
+    city: "Medellín",
+    zone: "El Poblado",
+    subzone: "Parque Lleras",
     distance: "A 1.8 kilómetros de ti",
     cuisine: "Mexicana",
     priceRange: "$",
@@ -52,14 +44,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "Sushi Kawa",
-    location: {
-      city: "Cartagena",
-      neighborhood: "Bocagrande",
-      zone: {
-        name: "Zona Hotelera",
-        subzones: ["Bocagrande", "Castillogrande"],
-      },
-    },
+    country: "Colombia",
+    city: "Cartagena",
+    zone: "Zona Hotelera",
+    subzone: "Bocagrande",
     distance: "A 3.2 kilómetros de ti",
     cuisine: "Japonesa",
     priceRange: "$$$",
@@ -76,14 +64,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "Verde Orgánico",
-    location: {
-      city: "Cali",
-      neighborhood: "San Fernando",
-      zone: {
-        name: "Zona Norte",
-        subzones: ["San Fernando", "Ciudad Jardín"],
-      },
-    },
+    country: "Colombia",
+    city: "Cali",
+    zone: "Zona Norte",
+    subzone: "San Fernando",
     distance: "A 0.8 kilómetros de ti",
     cuisine: "Vegetariana",
     priceRange: "$$",
@@ -100,14 +84,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "Burger House",
-    location: {
-      city: "Barranquilla",
-      neighborhood: "El Prado",
-      zone: {
-        name: "Zona Norte",
-        subzones: ["El Prado", "Alto Prado"],
-      },
-    },
+    country: "Colombia",
+    city: "Barranquilla",
+    zone: "Zona Norte",
+    subzone: "El Prado",
     distance: "A 1.5 kilómetros de ti",
     cuisine: "Comida Rápida",
     priceRange: "$",
@@ -124,14 +104,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "Gourmet Fusion",
-    location: {
-      city: "Pereira",
-      neighborhood: "Centro",
-      zone: {
-        name: "Centro Histórico",
-        subzones: ["Plaza de Bolívar", "Centro Comercial"],
-      },
-    },
+    country: "Colombia",
+    city: "Pereira",
+    zone: "Centro Histórico",
+    subzone: "Plaza de Bolívar",
     distance: "A 2.1 kilómetros de ti",
     cuisine: "Alta Cocina",
     priceRange: "$$$$",
@@ -148,14 +124,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "Café del Parque",
-    location: {
-      city: "Bucaramanga",
-      neighborhood: "Cabecera",
-      zone: {
-        name: "Zona Norte",
-        subzones: ["Cabecera del Llano", "Centro Comercial"],
-      },
-    },
+    country: "Colombia",
+    city: "Bucaramanga",
+    zone: "Zona Norte",
+    subzone: "Cabecera del Llano",
     distance: "A 0.5 kilómetros de ti",
     cuisine: "Café",
     priceRange: "$",
@@ -172,14 +144,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "La Cervecería",
-    location: {
-      city: "Santa Marta",
-      neighborhood: "Rodadero",
-      zone: {
-        name: "Zona Turística",
-        subzones: ["El Rodadero", "Bello Horizonte"],
-      },
-    },
+    country: "Colombia",
+    city: "Santa Marta",
+    zone: "Zona Turística",
+    subzone: "El Rodadero",
     distance: "A 1.2 kilómetros de ti",
     cuisine: "Bar",
     priceRange: "$$",
@@ -196,14 +164,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "Dulce Tentación",
-    location: {
-      city: "Bogotá",
-      neighborhood: "Usaquén",
-      zone: {
-        name: "Usaquén",
-        subzones: ["Centro Comercial", "Parque"],
-      },
-    },
+    country: "Colombia",
+    city: "Bogotá",
+    zone: "Usaquén",
+    subzone: "Callejuela",
     distance: "A 1.7 kilómetros de ti",
     cuisine: "Postres",
     priceRange: "$$",
@@ -220,14 +184,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "Sabor Criollo",
-    location: {
-      city: "Medellín",
-      neighborhood: "Laureles",
-      zone: {
-        name: "Laureles",
-        subzones: ["Laureles", "Estadio"],
-      },
-    },
+    country: "Colombia",
+    city: "Medellín",
+    zone: "Laureles",
+    subzone: "Estadio",
     distance: "A 2.3 kilómetros de ti",
     cuisine: "Colombiana",
     priceRange: "$$",
@@ -244,14 +204,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "Pizzería Napoli",
-    location: {
-      city: "Cali",
-      neighborhood: "Granada",
-      zone: {
-        name: "Zona Rosa",
-        subzones: ["Granada", "San Fernando"],
-      },
-    },
+    country: "Colombia",
+    city: "Cali",
+    zone: "Zona Rosa",
+    subzone: "Granada",
     distance: "A 1.9 kilómetros de ti",
     cuisine: "Italiana",
     priceRange: "$$",
@@ -268,14 +224,10 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     name: "El Sazón Peruano",
-    location: {
-      city: "Bogotá",
-      neighborhood: "Zona G",
-      zone: {
-        name: "Zona G",
-        subzones: ["Zona G", "Chapinero"],
-      },
-    },
+    country: "Colombia",
+    city: "Bogotá",
+    zone: "Zona G",
+    subzone: "Chapinero",
     distance: "A 3.0 kilómetros de ti",
     cuisine: "Peruana",
     priceRange: "$$$",
@@ -293,17 +245,77 @@ export const mockRestaurants: Restaurant[] = [
 ];
 
 // Mock locations
-export const mockLocations: string[] = [
-  "Bogotá, Colombia",
-  "Medellín, Colombia",
-  "Cali, Colombia",
-  "Barranquilla, Colombia",
-  "Cartagena, Colombia",
-  "Pereira, Colombia",
-  "Bucaramanga, Colombia",
-  "Santa Marta, Colombia",
-  "Manizales, Colombia",
-  "Pasto, Colombia",
+export const mockLocations = [
+  {
+    name: "Bogotá, Chapinero Alto, Chapinero, Colombia",
+    city: "Bogotá",
+    country: "Colombia",
+    zone: "Chapinero",
+    subzone: "Chapinero Alto",
+  },
+  {
+    name: "Medellín, Parque Lleras, El Poblado, Colombia",
+    city: "Medellín",
+    country: "Colombia",
+    zone: "El Poblado",
+    subzone: "Parque Lleras",
+  },
+  {
+    name: "Bogotá, Callejuela, Usaquén, Colombia",
+    city: "Bogotá",
+    country: "Colombia",
+    zone: "Usaquén",
+    subzone: "Callejuela",
+  },
+  {
+    name: "Cartagena, Bocagrande, Zona Hotelera, Colombia",
+    city: "Cartagena",
+    country: "Colombia",
+    zone: "Zona Hotelera",
+    subzone: "Bocagrande",
+  },
+  {
+    name: "Cali, San Fernando, Zona Norte, Colombia",
+    city: "Cali",
+    country: "Colombia",
+    zone: "Zona Norte",
+    subzone: "San Fernando",
+  },
+  {
+    name: "Barranquilla, El Prado, Zona Norte, Colombia",
+    city: "Barranquilla",
+    country: "Colombia",
+    zone: "Zona Norte",
+    subzone: "El Prado",
+  },
+  {
+    name: "Pereira, Plaza de Bolívar, Centro Histórico, Colombia",
+    city: "Pereira",
+    country: "Colombia",
+    zone: "Centro Histórico",
+    subzone: "Plaza de Bolívar",
+  },
+  {
+    name: "Bucaramanga, Cabecera del Llano, Zona Norte, Colombia",
+    city: "Bucaramanga",
+    country: "Colombia",
+    zone: "Zona Norte",
+    subzone: "Cabecera del Llano",
+  },
+  {
+    name: "Santa Marta, El Rodadero, Zona Turística, Colombia",
+    city: "Santa Marta",
+    country: "Colombia",
+    zone: "Zona Turística",
+    subzone: "El Rodadero",
+  },
+  {
+    name: "Manizales, Centro, Zona Central, Colombia",
+    city: "Manizales",
+    country: "Colombia",
+    zone: "Zona Central",
+    subzone: "Centro",
+  },
 ];
 
 // Mock cuisines
@@ -329,3 +341,126 @@ export const mockCuisines: string[] = [
   "Parrilla",
   "Vegana",
 ];
+
+export const mockCities = [
+  {
+    id: "medellin",
+    name: "Medellin, Colombia",
+    countryId: "Colombia",
+    type: "city",
+  },
+  {
+    id: "bogota",
+    name: "Bogotá, Colombia",
+    countryId: "Colombia",
+    type: "city",
+  },
+  {
+    id: "cartagena",
+    name: "Cartagena, Colombia",
+    countryId: "Colombia",
+    type: "city",
+  },
+  {
+    id: "cali",
+    name: "Cali, Colombia",
+    countryId: "Colombia",
+    type: "city",
+  },
+  {
+    id: "barranquilla",
+    name: "Barranquilla, Colombia",
+    countryId: "Colombia",
+    type: "city",
+  },
+  {
+    id: "pereira",
+    name: "Pereira, Colombia",
+    countryId: "Colombia",
+    type: "city",
+  },
+];
+
+const mockZones = [
+  {
+    id: "chapinero",
+    name: "Chapinero, Bogotá, Colombia",
+    cityId: "bogota",
+    type: "zone",
+  },
+  {
+    id: "el-poblado",
+    name: "El Poblado, Medellin, Colombia",
+    cityId: "medellin",
+    type: "zone",
+  },
+  {
+    id: "el-prado",
+    name: "El Prado, Barranquilla, Colombia",
+    cityId: "barranquilla",
+    type: "zone",
+  },
+];
+
+const mockSubzones = [
+  {
+    id: "chapinero-alto",
+    name: "Chapinero Alto,Chapinero, Bogotá, Colombia",
+    zoneId: "chapinero",
+    type: "subzone",
+  },
+
+  {
+    id: "chapinero-bajo",
+    name: "Chapinero Bajo,Chapinero, Bogotá, Colombia",
+    zoneId: "chapinero",
+    type: "subzone",
+  },
+  {
+    id: "parque-lleras",
+    name: "Parque Lleras, El Poblado, Medellin, Colombia",
+    zoneId: "el-poblado",
+    type: "subzone",
+  },
+];
+
+// create a function to search for   in the three mock arrays mockCities, t mockZones, mockSubzones
+// first search in mockCities, then in mockZones, then in mockSubzones
+// if the search is not found, return an empty array
+
+// Utility function to remove accents from strings
+export const removeAccents = (str: string): string => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
+export const searchMockData = (search: string) => {
+  console.log("search", search);
+  const cities = mockCities.filter((city) =>
+    removeAccents(city.name.toLowerCase()).includes(removeAccents(search))
+  );
+  if (cities.length > 0) {
+    return cities;
+  }
+
+  console.log("cities", cities);
+
+  const zones = mockZones.filter((zone) =>
+    removeAccents(zone.name.toLowerCase()).includes(removeAccents(search))
+  );
+  if (zones.length > 0) {
+    return zones;
+  }
+
+  console.log("zones", zones);
+
+  const subzones = mockSubzones.filter((subzone) =>
+    removeAccents(subzone.name.toLowerCase()).includes(removeAccents(search))
+  );
+  if (subzones.length > 0) {
+    return subzones;
+  }
+
+  console.log("subzones", subzones);
+
+  return [];
+};

@@ -1,15 +1,19 @@
 export interface Location {
+  name: string;
+  country: string;
   city: string;
-  neighborhood: string;
-  zone: {
-    name: string;
-    subzones: string[];
-  };
+  zone: string;
+  subzone: string;
 }
 
-export interface Restaurant {
+export type Place = {
+  id: string;
   name: string;
-  location: Location;
+  type: "city" | "zone" | "subzone";
+};
+
+export interface Restaurant extends Location {
+  name: string;
   distance: string;
   cuisine: string;
   priceRange: string;
