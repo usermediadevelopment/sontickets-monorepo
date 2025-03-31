@@ -118,7 +118,7 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
     );
   }
 
-  if (company.externalId === 'noi-remb' && reservation?.from === 'sistema') {
+  if (company.externalId === 'noi-remb') {
     return (
       <ReservationSummary
         reservation={reservation}

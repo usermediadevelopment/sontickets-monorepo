@@ -16,8 +16,8 @@ import {
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { Reservation } from '~/core/types';
+//uppercase each word usoing lodashj
 
-import { capitalize } from 'lodash';
 import { Timestamp } from 'firebase/firestore';
 import { formatDate, formatHourWithPeriod, getTimestampUtcToZonedTime } from '~/utils/date';
 import { useMemo } from 'react';
@@ -82,7 +82,7 @@ const ReservationSummary = ({
 
     // Formatted message with reservation details.
     const message = `
-${`¡Hola, *${capitalize(reservation.namesAndSurnames)}*! `}
+${`¡Hola, *${formatName(reservation?.namesAndSurnames ?? '')}*! `}
 *${t('reserve_confirmation.text_reservation_summary')}:*
 
 *${t('reserve_confirmation.text_reservation_code')}:* ${reservationCode}
@@ -113,15 +113,25 @@ ${imageUrl}
     }
   };
 
+  const formatName = (name: string) => {
+    return name
+      ?.split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   return (
     <Container
       maxW='5xl'
-      p={0}
       h={{ base: 'auto' }}
       display='flex'
       alignItems='center'
       justifyContent={'center'}
       pt={20}
+      px={{
+        base: 4,
+        md: 0,
+      }}
     >
       <Flex
         direction={{ base: 'column', md: 'row' }}
@@ -157,7 +167,8 @@ ${imageUrl}
               width={200}
             />
             <Heading size='2xl' fontWeight='extrabold' letterSpacing='tight'>
-              {t('reserve_confirmation.title_chunk_1')} {capitalize(reservation?.namesAndSurnames)}.
+              {t('reserve_confirmation.title_chunk_1')}{' '}
+              {formatName(reservation?.namesAndSurnames ?? '')}.
             </Heading>
 
             <VStack spacing={4} align='stretch'>
@@ -170,28 +181,28 @@ ${imageUrl}
               <Divider borderColor='whiteAlpha.300' />
 
               <HStack>
-                <Icon as={HashIcon} boxSize={5} />
+                <Icon as={HashIcon as any} boxSize={5} />
                 <Text fontSize='xl' fontWeight='medium'>
                   {t('reserve_confirmation.text_reservation_code')}: {reservation?.code}
                 </Text>
               </HStack>
 
               <HStack>
-                <Icon as={ClockIcon} boxSize={5} />
+                <Icon as={ClockIcon as any} boxSize={5} />
                 <Text fontSize='xl' fontWeight='medium'>
                   {t('reserve_confirmation.text_day')}: {getDayFormattted}
                 </Text>
               </HStack>
 
               <HStack>
-                <Icon as={ClockIcon} boxSize={5} />
+                <Icon as={ClockIcon as any} boxSize={5} />
                 <Text fontSize='xl' fontWeight='medium'>
                   {t('reserve_confirmation.text_hour')}: {getStarHour} {getEndHour}
                 </Text>
               </HStack>
 
               <HStack>
-                <Icon as={UsersIcon} boxSize={5} />
+                <Icon as={UsersIcon as any} boxSize={5} />
                 <Text fontSize='xl' fontWeight='medium'>
                   {reservation?.location?.name} ({reservation?.numberPeople + ' '}
                   {t('reserve_confirmation.text_people')})
