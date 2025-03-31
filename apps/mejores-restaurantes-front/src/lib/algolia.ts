@@ -20,7 +20,15 @@ export type AmenitiesCategory = {
 interface AlgoliaHit {
   category: string;
   options: AmenityOption[];
+  objectID: string;
   [key: string]: unknown;
+}
+
+interface AlgoliaSearchResponse {
+  results: Array<{
+    hits: Array<AlgoliaHit>;
+    [key: string]: unknown;
+  }>;
 }
 
 // Function to fetch all amenities
@@ -28,17 +36,17 @@ export const fetchAllAmenities = async (): Promise<
   Record<string, AmenityOption[]>
 > => {
   try {
-    const response = await client.search({
+    const response = (await client.search({
       requests: [
         {
           indexName: "amenities",
           query: "",
           params: {
             hitsPerPage: 100,
-          },
+          } as unknown as string,
         },
       ],
-    });
+    })) as unknown as AlgoliaSearchResponse;
 
     if (!response.results?.[0]?.hits) {
       return {};
@@ -46,11 +54,10 @@ export const fetchAllAmenities = async (): Promise<
 
     // Convert hits to a record by category
     return response.results[0].hits.reduce(
-      (acc: Record<string, AmenityOption[]>, hit) => {
-        const typedHit = hit as unknown as AlgoliaHit;
+      (acc: Record<string, AmenityOption[]>, hit: AlgoliaHit) => {
         return {
           ...acc,
-          [typedHit.category]: typedHit.options,
+          [hit.category]: hit.options,
         };
       },
       {}
@@ -66,7 +73,7 @@ export const fetchAmenitiesByCategory = async (
   category: string
 ): Promise<AmenityOption[]> => {
   try {
-    const response = await client.search({
+    const response = (await client.search({
       requests: [
         {
           indexName: "amenities",
@@ -74,16 +81,16 @@ export const fetchAmenitiesByCategory = async (
           params: {
             filters: `category:${category}`,
             hitsPerPage: 1,
-          },
+          } as unknown as string,
         },
       ],
-    });
+    })) as unknown as AlgoliaSearchResponse;
 
     if (!response.results?.[0]?.hits?.length) {
       return [];
     }
 
-    const hit = response.results[0].hits[0] as unknown as AlgoliaHit;
+    const hit = response.results[0].hits[0];
     return hit.options || [];
   } catch (error) {
     console.error(`Error fetching ${category} amenities from Algolia:`, error);

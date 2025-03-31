@@ -14,6 +14,8 @@ import { mockCities, searchMockData } from "@/lib/mock-data";
 import { type FilterOptions, Place, filterLabels } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
+import { Search as SearchAlgolia } from "@/components/Search";
+
 const mockPlaces: Place[] = mockCities.map((city) => ({
   id: city.id,
   name: city.name,
@@ -262,6 +264,7 @@ export default function SiteHeader() {
             >
               <div className="text-xs font-medium">Dónde</div>
               <div className="flex items-center">
+                <SearchAlgolia />
                 <Input
                   type="text"
                   value={placeSearch}
