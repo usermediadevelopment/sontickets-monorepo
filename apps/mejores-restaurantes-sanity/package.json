@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "main": "package.json",
+  "type": "module",
   "license": "UNLICENSED",
   "scripts": {
     "dev": "sanity dev",
@@ -12,14 +13,17 @@
     "deploy": "sanity deploy",
     "deploy:dev": "SANITY_ACTIVE_ENV=development sanity deploy",
     "deploy-graphql": "sanity graphql deploy",
-    "generate:schemas": "npx sanity schema extract && npx sanity typegen generate"
+    "generate:schemas": "npx sanity schema extract && npx sanity typegen generate",
+    "sync-algolia": "node utils/algoliaSync.js"
   },
   "keywords": [
     "sanity"
   ],
   "dependencies": {
+    "@algolia/client-search": "^5.23.0",
     "@sanity/google-maps-input": "^4.0.1",
     "@sanity/vision": "^3.78.0",
+    "algoliasearch": "^5.23.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sanity": "^3.78.0",

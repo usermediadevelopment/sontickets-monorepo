@@ -98,4 +98,4 @@ export const foodTypes = [
   {title: 'Postres', value: 'postres'},
   {title: 'Café', value: 'café'},
   {title: 'Bebidas', value: 'bebidas'},
-]
+] 

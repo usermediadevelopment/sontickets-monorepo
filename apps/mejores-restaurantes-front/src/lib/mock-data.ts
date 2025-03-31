@@ -451,8 +451,6 @@ export const searchMockData = (search: string) => {
     return zones;
   }
 
-  console.log("zones", zones);
-
   const subzones = mockSubzones.filter((subzone) =>
     removeAccents(subzone.name.toLowerCase()).includes(removeAccents(search))
   );

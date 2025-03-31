@@ -6,6 +6,8 @@ import {
   facilitiesOptions,
   paymentOptions,
   suitableForOptions,
+  establishmentTypes,
+  foodTypes,
 } from './data/amenities'
 
 export const locationSchema = defineType({
@@ -167,7 +169,25 @@ export const locationSchema = defineType({
       of: [{type: 'openingHour'}],
     }),
 
-    // 5. Procedimientos
+    defineField({
+      name: 'establishmentType',
+      title: 'Tipo de establecimiento',
+      type: 'array',
+      of: [{type: 'string'}],
+      options: {
+        list: establishmentTypes,
+      },
+    }),
+
+    defineField({
+      name: 'foodType',
+      title: 'Tipo de comida',
+      type: 'array',
+      of: [{type: 'string'}],
+      options: {
+        list: foodTypes,
+      },
+    }),
     defineField({
       name: 'outstandingFeatures',
       title: 'Aspectos sobresalientes',

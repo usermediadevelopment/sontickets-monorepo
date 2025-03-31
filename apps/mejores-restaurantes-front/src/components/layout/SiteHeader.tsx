@@ -277,7 +277,7 @@ export default function SiteHeader() {
                   <button
                     onClick={() => {
                       setPlaceSearch("");
-                      onSearch("", cuisineSearch, compactSearch);
+                      router.push("/");
                     }}
                     className="text-gray-400 hover:text-gray-600 p-1"
                   >
