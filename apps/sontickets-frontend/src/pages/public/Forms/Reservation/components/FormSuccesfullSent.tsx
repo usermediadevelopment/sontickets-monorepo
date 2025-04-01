@@ -46,10 +46,19 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   const [company, setCompany] = useState<any>(null);
 
   useEffect(() => {
-    if (textSuccess.current) {
-      console.log('scrollIntoView');
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }, 300);
+  }, []);
 
-      textSuccess.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  useEffect(() => {
+    if (textSuccess.current) {
+      setTimeout(() => {
+        textSuccess.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
     }
   }, [textSuccess]);
 
