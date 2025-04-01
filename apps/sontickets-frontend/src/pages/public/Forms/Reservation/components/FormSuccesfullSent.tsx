@@ -47,7 +47,9 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
 
   useEffect(() => {
     if (textSuccess.current) {
-      textSuccess.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      console.log('scrollIntoView');
+
+      textSuccess.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [textSuccess]);
 
@@ -120,7 +122,7 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
 
   if (company.externalId === 'noi-remb') {
     return (
-      <Box ref={textSuccess}>
+      <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
         <ReservationSummary
           reservation={reservation}
           goBack={() => {
@@ -129,7 +131,7 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
           }}
           cancelReservation={handleCancelReservation}
         />
-      </Box>
+      </VStack>
     );
   }
   return (
