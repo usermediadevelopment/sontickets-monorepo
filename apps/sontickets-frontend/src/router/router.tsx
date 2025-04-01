@@ -15,6 +15,7 @@ import HeaderSuperAdmin from '~/components/HeaderSuperAdmin';
 import SuperAdminSettings from '~/pages/private/superadmin/settings/Settings';
 import { Forms } from '~/pages/public/Forms/Forms';
 import Performance from '~/pages/private/performance';
+import TestForm from '~/pages/public/TestForm';
 
 const Router = () => {
   // This effect runs once, after the first render
@@ -52,6 +53,7 @@ const Router = () => {
       <Route path={'/reservations/:externalId/:code'} element={<Forms />} />
       <Route path={'/login'} element={<Login />} />
       <Route path={'/delete'} element={<DeleteReservations />} />
+      <Route path={'/test'} element={<TestForm />} />
     </Routes>
   );
 };
