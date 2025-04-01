@@ -123,7 +123,6 @@ ${imageUrl}
   return (
     <Container
       maxW='5xl'
-      h={{ base: 'auto' }}
       display='flex'
       alignItems='center'
       justifyContent={'center'}
