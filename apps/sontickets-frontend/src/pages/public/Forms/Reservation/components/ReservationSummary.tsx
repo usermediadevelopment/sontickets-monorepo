@@ -129,7 +129,6 @@ ${imageUrl}
       justifyContent={'center'}
       pt={20}
       px={{
-        base: 4,
         md: 0,
       }}
     >
@@ -225,36 +224,66 @@ ${imageUrl}
               {t('reserve_confirmation.text_share_whatsapp')}
             </Button>
 
-            <HStack spacing={4} mt={8}>
-              <Button
-                as={motion.button}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                variant='outline'
-                color='white'
-                borderColor='white'
-                _hover={{ bg: 'whiteAlpha.200' }}
-                flex={1}
-                borderRadius={35}
-                fontWeight='medium'
-                onClick={goBack}
-              >
-                {t('general.text_return')}
-              </Button>
-              <Button
-                as={motion.button}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                bg='red.500'
-                _hover={{ bg: 'red.600' }}
-                flex={1}
-                borderRadius={35}
-                fontWeight='medium'
-                onClick={cancelReservation}
-              >
-                {t('general.cancel_reservation')}
-              </Button>
-            </HStack>
+            <Box
+              display='flex'
+              flexDirection={{
+                base: 'column',
+                md: 'row',
+              }}
+              w='full'
+              justifyContent={{
+                base: 'center',
+                md: 'flex-start',
+              }}
+              alignItems={{
+                base: 'center',
+                md: 'flex-start',
+              }}
+              gap={4}
+            >
+              <div>
+                <Button
+                  as={motion.button}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  variant='outline'
+                  color='white'
+                  borderColor='white'
+                  _hover={{ bg: 'whiteAlpha.200' }}
+                  flex={1}
+                  borderRadius={35}
+                  fontWeight='medium'
+                  onClick={goBack}
+                  size={{
+                    base: 'md',
+                    md: 'md',
+                  }}
+                >
+                  {t('general.text_return')}
+                </Button>
+              </div>
+              <div>
+                <Button
+                  w='full'
+                  as={motion.button}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  bg='red.500'
+                  color='white'
+                  _hover={{ bg: 'red.600' }}
+                  flex={1}
+                  borderRadius={35}
+                  fontWeight='medium'
+                  onClick={cancelReservation}
+                  size={{
+                    base: 'sm',
+                    md: 'md',
+                  }}
+                >
+                  {t('general.cancel_reservation')}
+                </Button>
+              </div>
+            </Box>
           </VStack>
         </MotionBox>
       </Flex>
