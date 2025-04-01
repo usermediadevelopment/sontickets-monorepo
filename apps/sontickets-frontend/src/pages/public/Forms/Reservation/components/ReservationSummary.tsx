@@ -268,13 +268,13 @@ ${imageUrl}
                   as={motion.button}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  bg='red.500'
                   color='white'
-                  _hover={{ bg: 'red.600' }}
+                  _hover={{ bg: 'red.200' }}
                   flex={1}
                   borderRadius={35}
                   fontWeight='medium'
                   onClick={cancelReservation}
+                  variant={'ghost'}
                   size={{
                     base: 'sm',
                     md: 'md',
