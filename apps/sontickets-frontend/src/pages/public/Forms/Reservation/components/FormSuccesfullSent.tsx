@@ -120,14 +120,17 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
 
   if (company.externalId === 'noi-remb') {
     return (
-      <ReservationSummary
-        reservation={reservation}
-        goBack={() => {
-          onBack!();
-          changeForm(FormType.NEW_RESERVATION);
-        }}
-        cancelReservation={handleCancelReservation}
-      />
+      <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
+        <Text>Testing</Text>
+        <ReservationSummary
+          reservation={reservation}
+          goBack={() => {
+            onBack!();
+            changeForm(FormType.NEW_RESERVATION);
+          }}
+          cancelReservation={handleCancelReservation}
+        />
+      </VStack>
     );
   }
   return (
