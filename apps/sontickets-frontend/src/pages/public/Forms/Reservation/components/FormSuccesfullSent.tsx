@@ -46,19 +46,8 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   const [company, setCompany] = useState<any>(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-    }, 300);
-  }, []);
-
-  useEffect(() => {
     if (textSuccess.current) {
-      setTimeout(() => {
-        textSuccess.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 300);
+      textSuccess.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [textSuccess]);
 
@@ -131,20 +120,18 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
 
   if (company.externalId === 'noi-remb') {
     return (
-      <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
-        <ReservationSummary
-          reservation={reservation}
-          goBack={() => {
-            onBack!();
-            changeForm(FormType.NEW_RESERVATION);
-          }}
-          cancelReservation={handleCancelReservation}
-        />
-      </VStack>
+      <ReservationSummary
+        reservation={reservation}
+        goBack={() => {
+          onBack!();
+          changeForm(FormType.NEW_RESERVATION);
+        }}
+        cancelReservation={handleCancelReservation}
+      />
     );
   }
   return (
-    <VStack alignItems='center' justifyContent='center'>
+    <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
       <Text textAlign={'center'} fontWeight={'bold'}>
         {t('reserve_confirmation.title_chunk_1')} {reservation?.namesAndSurnames as string}{' '}
         {t('reserve_confirmation.title_chunk_2')} #{reservation?.code as string}{' '}
