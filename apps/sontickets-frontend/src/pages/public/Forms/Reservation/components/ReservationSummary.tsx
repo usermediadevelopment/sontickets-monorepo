@@ -220,7 +220,7 @@ ${imageUrl}
               borderRadius={35}
               onClick={handleShareWhatsApp}
             >
-              {t('reserve_confirmation.text_share_whatsapp')}
+              {t('reserve_confirmation.text_share_whatsapp')}p
             </Button>
 
             <Box
