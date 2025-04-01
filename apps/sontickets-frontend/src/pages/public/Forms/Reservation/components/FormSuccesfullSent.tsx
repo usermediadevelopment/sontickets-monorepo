@@ -120,18 +120,20 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
 
   if (company.externalId === 'noi-remb') {
     return (
-      <ReservationSummary
-        reservation={reservation}
-        goBack={() => {
-          onBack!();
-          changeForm(FormType.NEW_RESERVATION);
-        }}
-        cancelReservation={handleCancelReservation}
-      />
+      <Box ref={textSuccess}>
+        <ReservationSummary
+          reservation={reservation}
+          goBack={() => {
+            onBack!();
+            changeForm(FormType.NEW_RESERVATION);
+          }}
+          cancelReservation={handleCancelReservation}
+        />
+      </Box>
     );
   }
   return (
-    <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
+    <VStack alignItems='center' justifyContent='center'>
       <Text textAlign={'center'} fontWeight={'bold'}>
         {t('reserve_confirmation.title_chunk_1')} {reservation?.namesAndSurnames as string}{' '}
         {t('reserve_confirmation.title_chunk_2')} #{reservation?.code as string}{' '}

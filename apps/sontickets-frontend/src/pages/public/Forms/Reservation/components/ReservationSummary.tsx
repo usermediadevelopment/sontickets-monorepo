@@ -230,59 +230,62 @@ ${imageUrl}
                 base: 'column',
                 md: 'row',
               }}
-              w='full'
-              justifyContent={{
-                base: 'center',
-                md: 'flex-start',
-              }}
-              alignItems={{
-                base: 'center',
-                md: 'flex-start',
-              }}
               gap={4}
+              mt={8}
             >
-              <div>
-                <Button
-                  as={motion.button}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  variant='outline'
-                  color='white'
-                  borderColor='white'
-                  _hover={{ bg: 'whiteAlpha.200' }}
-                  flex={1}
-                  borderRadius={35}
-                  fontWeight='medium'
-                  onClick={goBack}
-                  size={{
-                    base: 'md',
-                    md: 'md',
-                  }}
-                >
-                  {t('general.text_return')}
-                </Button>
-              </div>
-              <div>
-                <Button
-                  w='full'
-                  as={motion.button}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  color='white'
-                  _hover={{ bg: 'red.200' }}
-                  flex={1}
-                  borderRadius={35}
-                  fontWeight='medium'
-                  onClick={cancelReservation}
-                  variant={'ghost'}
-                  size={{
-                    base: 'sm',
-                    md: 'md',
-                  }}
-                >
-                  {t('general.cancel_reservation')}
-                </Button>
-              </div>
+              <Button
+                as={motion.button}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                variant='outline'
+                paddingY={{
+                  base: 3,
+                  md: 4,
+                }}
+                color='white'
+                borderColor='white'
+                _hover={{ bg: 'whiteAlpha.200' }}
+                flex={1}
+                width='100%'
+                borderRadius={35}
+                fontWeight='medium'
+                onClick={goBack}
+              >
+                {t('general.text_return')}
+              </Button>
+
+              <Button
+                as={motion.button}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                bg={{
+                  base: '',
+                  md: 'red',
+                }}
+                width='100%'
+                paddingY={{
+                  base: 0,
+                  md: 4,
+                }}
+                _hover={{ bg: 'transparent' }}
+                flex={1}
+                borderRadius={35}
+                fontWeight='medium'
+                onClick={cancelReservation}
+                variant={{
+                  base: 'ghost',
+                  md: 'solid',
+                }}
+                textFillColor={'white'}
+                textColor={'white'}
+                color={'white'}
+                fontSize={{
+                  base: 'sm',
+                  md: 'md',
+                }}
+              >
+                {t('general.cancel_reservation')}
+              </Button>
             </Box>
           </VStack>
         </MotionBox>
