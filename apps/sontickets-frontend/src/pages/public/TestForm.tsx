@@ -9,12 +9,11 @@ const TestForm = () => {
       alignItems='center'
       justifyContent='center'
     >
-      <Box h={'30vh'}></Box>
+      <Box h={'100vh'}></Box>
       <iframe
         title='reservas'
         src='http://localhost:5173/form/noi-remb?lang=es&from=mejoresrestaurantes.co'
-        frameBorder='0'
-        height='800'
+        height='800px'
         width='100%'
       ></iframe>
       <Box height={'500vh'}>dsa</Box>

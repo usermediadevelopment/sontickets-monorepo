@@ -46,10 +46,33 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   const [company, setCompany] = useState<any>(null);
 
   useEffect(() => {
-    if (textSuccess.current) {
+    if (textSuccess.current && company.externalId !== 'noi-remb') {
       textSuccess.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
     }
-  }, [textSuccess]);
+
+    try {
+      // Try to scroll the parent window if we're in an iframe
+      if (window.parent !== window) {
+        console.log('scroll to parent');
+        textSuccess.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+
+        setTimeout(() => {
+          window.parent.scrollTo({ top: window.innerHeight - 100, behavior: 'smooth' });
+        }, 2000);
+      } else {
+        // Fallback to regular window scroll if not in iframe
+        console.log('scroll to current');
+        textSuccess.current?.scrollTo({ top: 200, behavior: 'smooth' });
+      }
+    } catch (error) {
+      // Handle any potential cross-origin issues silently
+      console.warn('Could not scroll parent window:', error);
+    }
+  }, [textSuccess, company]);
 
   const handleCancelReservation = async () => {
     setIsCanceling(true);

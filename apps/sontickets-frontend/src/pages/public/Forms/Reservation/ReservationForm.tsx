@@ -364,7 +364,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
         location: locToVal,
         reservation,
       });
-      debugger;
+
       const isOccupiedEndHour = endHours.find(
         (hour) => hour.value === newReservation.endHour
       )?.disabled;
