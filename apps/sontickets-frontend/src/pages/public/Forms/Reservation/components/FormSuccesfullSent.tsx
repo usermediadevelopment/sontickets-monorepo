@@ -121,7 +121,6 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   if (company.externalId === 'noi-remb') {
     return (
       <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
-        <Text>Testing</Text>
         <ReservationSummary
           reservation={reservation}
           goBack={() => {
