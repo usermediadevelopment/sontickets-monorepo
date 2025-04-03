@@ -1,8 +1,8 @@
-import { defineType, defineField } from 'sanity';
+import {defineType, defineField} from 'sanity'
 
 export const categorySchema = defineType({
   name: 'category',
-  title: 'Category',
+  title: 'Cuisine',
   type: 'document',
   fields: [
     defineField({
@@ -32,4 +32,4 @@ export const categorySchema = defineType({
       type: 'image',
     }),
   ],
-});
+})
