@@ -24,6 +24,12 @@ export const locationSchema = defineType({
     },
   ],
   fields: [
+    defineField({
+      name: 'language',
+      type: 'string',
+      readOnly: true,
+      hidden: true,
+    }),
     // create a field to enable or disable the location by default it will be enabled
     defineField({
       name: 'enabled',

@@ -40,5 +40,10 @@ export const subzoneSchema = defineType({
       description: 'Mark this subzone as popular or well-known',
       initialValue: false,
     }),
+    defineField({
+      name: 'seo',
+      title: 'SEO Settings',
+      type: 'seo',
+    }),
   ],
 })

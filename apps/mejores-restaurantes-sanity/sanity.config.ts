@@ -3,10 +3,12 @@ import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemas'
 import {googleMapsInput} from '@sanity/google-maps-input'
+import {documentInternationalization} from '@sanity/document-internationalization'
 
 // Import our custom structure
 import {structure} from './structure'
 import {getDefaultDocumentNode} from './structure/defaultDocumentNode'
+import {internationalizedArray} from 'sanity-plugin-internationalized-array'
 
 export default defineConfig({
   name: 'default',
@@ -29,6 +31,13 @@ export default defineConfig({
         lng: -74.0721,
       },
       apiKey: 'AIzaSyDLy8EfZsZTcMbvN9FOPQ4fW8k56sDk5bc',
+    }),
+    documentInternationalization({
+      supportedLanguages: [
+        {id: 'es', title: 'Spanish'},
+        {id: 'en', title: 'English'},
+      ],
+      schemaTypes: ['restaurant', 'location', 'category'],
     }),
   ],
 

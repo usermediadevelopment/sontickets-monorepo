@@ -21,12 +21,14 @@
   ],
   "dependencies": {
     "@algolia/client-search": "^5.23.0",
+    "@sanity/document-internationalization": "^3.3.1",
     "@sanity/google-maps-input": "^4.0.1",
     "@sanity/vision": "^3.78.0",
     "algoliasearch": "^5.23.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sanity": "^3.78.0",
+    "sanity-plugin-internationalized-array": "^3.1.2",
     "styled-components": "^6.1.8"
   },
   "devDependencies": {

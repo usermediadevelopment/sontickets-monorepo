@@ -25,6 +25,12 @@ export const restaurantSchema = defineType({
   ],
   fields: [
     defineField({
+      name: 'language',
+      type: 'string',
+      readOnly: true,
+      hidden: true,
+    }),
+    defineField({
       name: 'name',
       title: 'Restaurant Name',
       type: 'string',

@@ -6,6 +6,12 @@ export const categorySchema = defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'language',
+      type: 'string',
+      readOnly: true,
+      hidden: true,
+    }),
+    defineField({
       name: 'name',
       title: 'Category Name',
       type: 'string',
@@ -30,6 +36,12 @@ export const categorySchema = defineType({
       name: 'icon',
       title: 'Icon',
       type: 'image',
+    }),
+
+    defineField({
+      name: 'seo',
+      title: 'SEO Settings',
+      type: 'seo',
     }),
   ],
 })
