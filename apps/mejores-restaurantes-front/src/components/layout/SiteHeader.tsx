@@ -13,8 +13,7 @@ import ActiveFilters from "@/components/active-filters";
 import { mockCities, searchMockData } from "@/lib/mock-data";
 import { type FilterOptions, Place, filterLabels } from "@/lib/types";
 import { useRouter } from "next/navigation";
-
-import { Search as SearchAlgolia } from "@/components/Search";
+import { SearchAmenities } from "../SearchAmenities";
 
 const mockPlaces: Place[] = mockCities.map((city) => ({
   id: city.id,
@@ -264,7 +263,6 @@ export default function SiteHeader() {
             >
               <div className="text-xs font-medium">Dónde</div>
               <div className="flex items-center">
-                <SearchAlgolia />
                 <Input
                   type="text"
                   value={placeSearch}
@@ -306,22 +304,8 @@ export default function SiteHeader() {
             >
               <div className="text-xs font-medium">Qué</div>
               <div className="flex items-center">
-                <Input
-                  type="text"
-                  ref={cuisineSearchRef}
-                  value={cuisineSearch}
-                  onChange={(e) => {
-                    setCuisineSearch(e.target.value);
-                    setScrolled(false);
-                    if (cuisineSearchRef.current) {
-                      cuisineSearchRef.current.focus();
-                    }
-                    onSearch(placeSearch, cuisineSearch, e.target.value);
-                  }}
-                  onFocus={() => setShowCuisineDropdown(true)}
-                  placeholder="Platos o cocina"
-                  className="border-0 p-0 h-auto text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
+                <SearchAmenities />
+
                 {cuisineSearch && (
                   <button
                     onClick={() => {

@@ -27,16 +27,16 @@ const fetchAmenitiesData = async () => {
   } = await import('../schemas/data/amenities.js')
 
   // Create a structured amenities object
-  const amenitiesData = {
-    dietaryPreferences: dietaryPreferencesOptions,
-    ambiance: ambianceOptions,
-    facilities: facilitiesOptions,
-    entertainment: entertainmentOptions,
-    suitableFor: suitableForOptions,
-    payment: paymentOptions,
-    establishmentTypes: establishmentTypes,
-    foodTypes: foodTypes,
-  }
+  const amenitiesData = [
+    ...dietaryPreferencesOptions,
+    ...ambianceOptions,
+    ...facilitiesOptions,
+    ...entertainmentOptions,
+    ...suitableForOptions,
+    ...paymentOptions,
+    ...establishmentTypes,
+    ...foodTypes,
+  ]
 
   return amenitiesData
 }
@@ -49,15 +49,17 @@ export const syncAmenitiesToAlgolia = async () => {
     // Fetch the amenities data
     const amenitiesData = await fetchAmenitiesData()
 
-    // Create formatted records for Algolia
-    const records = Object.entries(amenitiesData).map(([category, options]) => {
+
+    const records = amenitiesData.map((item) => {
       return {
-        objectID: category,
-        category,
-        options,
+        ...item,
+        objectID: item.value,
+        title: item.title,
+        value: item.value,
+        type: 'amenity',
       }
     })
-
+    
     // Save the records to Algolia - using the new API
     await client.saveObjects({
       indexName: 'amenities',
