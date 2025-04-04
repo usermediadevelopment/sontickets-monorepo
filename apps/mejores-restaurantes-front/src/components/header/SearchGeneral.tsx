@@ -3,17 +3,17 @@
 "use client";
 import { liteClient as algoliasearch } from "algoliasearch/lite";
 import {
-  SearchBox,
   Hits,
   useHits,
   Index,
   Configure,
+  useSearchBox,
 } from "react-instantsearch";
 import { InstantSearchNext } from "react-instantsearch-nextjs";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { Hit } from "algoliasearch";
+import { HitsListProps, CustomSearchBoxProps } from "./types";
 
 const algoliaAppId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY!;
@@ -31,8 +31,59 @@ function queryHook(query: string, search: (query: string) => void) {
   timerId = setTimeout(() => search(query), timeout);
 }
 
-type HitsListProps = {
-  onClick: (hit: Hit) => void;
+// Custom SearchBox component that handles default query
+const CustomSearchBox = ({
+  defaultQuery = "Popular",
+  onFocus,
+}: CustomSearchBoxProps) => {
+  const { refine } = useSearchBox();
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
+
+  // Set default query when focused
+  const handleFocus = () => {
+    const searchPlace = document.getElementById("search-places-input");
+    if (pathname === "/" && searchPlace) {
+      searchPlace.focus();
+      return;
+    }
+
+    onFocus?.();
+    if (!inputValue) {
+      refine(defaultQuery);
+    }
+  };
+
+  // Clear default query when blurred
+  const handleBlur = () => {
+    if (inputValue === defaultQuery) {
+      setInputValue("");
+      refine("");
+    }
+  };
+
+  // Update the query when input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    queryHook(newValue, refine);
+  };
+
+  return (
+    <div className="w-full">
+      <input
+        ref={inputRef}
+        type="search"
+        value={inputValue}
+        placeholder="Buscar comida, bebida, etc."
+        onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        className="border-0 p-0 h-auto text-sm focus:outline-none focus:ring-0 focus:ring-offset-0 hover:outline-none hover:ring-0 hover:ring-offset-0 w-full"
+      />
+    </div>
+  );
 };
 
 const HitsList = ({ onClick }: HitsListProps) => {
@@ -62,18 +113,15 @@ const HitsList = ({ onClick }: HitsListProps) => {
   );
 };
 
-export const SearchAmenities = ({
-  isMobile = true,
-}: {
-  isMobile?: boolean;
-}) => {
+export const SearchGeneral = ({}: { isMobile?: boolean }) => {
   const [showHits, setShowHits] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const params = useParams();
 
   const { rest } = params as { rest: string[] };
 
-  console.log("Rest", rest);
+  // Default query when search is focused
+  const DEFAULT_QUERY = "a";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -114,40 +162,18 @@ export const SearchAmenities = ({
           },
         }}
       >
-        {/* SearchBox for input */}
-
-        <SearchBox
-          queryHook={(query, search) => {
-            queryHook(query, search);
-            setShowHits(true);
-          }}
-          placeholder="Buscar comida, bebida, etc."
-          results={10}
-          classNames={{
-            resetIcon: "hidden",
-            root: "w-full",
-            form: "w-full",
-            input:
-              "border-0 p-0 h-auto text-sm focus:outline-none focus:ring-0 focus:ring-offset-0 hover:outline-none hover:ring-0 hover:ring-offset-0 w-full",
-            submit: "hidden",
-            reset: "hidden",
-          }}
-        />
+        <div className="w-full">
+          <CustomSearchBox defaultQuery={DEFAULT_QUERY} />
+        </div>
 
         {showHits && (
           <div className="absolute left-0 right-0  top-8 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto w-full">
             <Index indexName="amenities">
-              <HitsList
-                isMobile={isMobile}
-                onClose={() => setShowHits(false)}
-              />
+              <HitsList onClick={() => setShowHits(false)} />
             </Index>
             <Index indexName="restaurants">
-              <Configure facetFilters={`city:${rest[1]}`} />
-              <HitsList
-                isMobile={isMobile}
-                onClose={() => setShowHits(false)}
-              />
+              <Configure facetFilters={`city:${rest?.[1]}`} />
+              <HitsList onClick={() => setShowHits(false)} />
             </Index>
           </div>
         )}

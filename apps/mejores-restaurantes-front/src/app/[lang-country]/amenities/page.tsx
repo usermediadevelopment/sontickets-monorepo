@@ -1,4 +1,4 @@
-import { SearchAmenities } from "@/components/SearchAmenities";
+import { SearchAmenities } from "@/components/header/SearchGeneral";
 
 export const dynamic = "force-dynamic";
 

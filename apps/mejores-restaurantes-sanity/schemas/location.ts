@@ -50,6 +50,7 @@ export const locationSchema = defineType({
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
+
     defineField({
       name: 'slug',
       title: 'Slug',
@@ -57,8 +58,40 @@ export const locationSchema = defineType({
       options: {
         source: 'name',
         maxLength: 96,
+        documentInternationalization: {
+          exclude: true,
+        },
       },
-      validation: (Rule) => Rule.required(),
+      // Hide for English translations and validate for Spanish (source) documents
+      hidden: ({document}) => document?.language === 'en',
+      validation: (Rule) =>
+        Rule.required().custom(async (value, context) => {
+          if (!value || !context.document) return true
+
+          // Only validate on Spanish (source) documents
+          if (context.document.language === 'en') return true
+
+          // Get the client from the context
+          const {getClient} = context
+          const client = getClient({apiVersion: '2023-01-01'})
+
+          // Check if there's another document with the same slug
+          const id = context.document._id.replace(/^drafts\./, '')
+          const query = `*[_type == "location" && slug.current == $slug && _id != $id && _id != $draftId][0]`
+          const params = {
+            slug: value.current,
+            id,
+            draftId: `drafts.${id}`,
+          }
+
+          const existingDoc = await client.fetch(query, params)
+
+          if (existingDoc) {
+            return 'A location with this slug already exists'
+          }
+
+          return true
+        }),
     }),
 
     defineField({
@@ -72,6 +105,13 @@ export const locationSchema = defineType({
       title: 'Restaurant',
       type: 'reference',
       to: [{type: 'restaurant'}],
+    }),
+
+    defineField({
+      name: 'dishType',
+      title: 'Dish Type',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'dishType'}]}],
     }),
 
     // I woudl like to add phone numbers to the location, the user can select the

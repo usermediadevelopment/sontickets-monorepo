@@ -1,9 +1,8 @@
 // /api/sanity/algolia.ts
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { searchClient } from "@algolia/client-search";
 import { sanityClient } from "@/config/client";
-import { SLocation } from "@/types/sanity.custom.type";
 import {
   SPlace,
   SanityPlacesResult,
@@ -192,53 +191,25 @@ const getPlaces = async (): Promise<SPlace[]> => {
 };
 
 // Update the GET handler to use getPlaces
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const indexType = searchParams.get("type") || "restaurants";
+export async function GET() {
+  const indexName = "places";
 
   try {
-    if (indexType === "places") {
-      const places = await getPlaces();
+    const places = await getPlaces();
 
-      await client.saveObjects({
-        indexName: "places",
-        objects: places,
-      });
+    await client.saveObjects({
+      indexName,
+      objects: places,
+    });
 
-      return NextResponse.json(
-        {
-          message: "Places index synced successfully",
-          count: places.length,
-          places,
-        },
-        { status: 200 }
-      );
-    } else {
-      // Original restaurants indexing logic
-      const locations = await getLocactions();
-
-      const objects = locations.map((location) => ({
-        objectID: location._id,
-        title: location.name,
-        slug: location?.slug?.current,
-        value: location._id,
-        type: "location",
-        city: location.city?.slug?.current,
-      }));
-
-      await client.saveObjects({
-        indexName: "restaurants",
-        objects: objects,
-      });
-
-      return NextResponse.json(
-        {
-          message: "Restaurants index synced successfully",
-          count: objects.length,
-        },
-        { status: 200 }
-      );
-    }
+    return NextResponse.json(
+      {
+        message: "Places index synced successfully",
+        count: places.length,
+        places,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error syncing index:", error);
     return NextResponse.json(
@@ -247,48 +218,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-// Create a function to fetch the predefined establishmentType values
-export const getEstablishmentTypes = async () => {
-  // This is the GROQ query to fetch the schema document that contains the establishment types
-  const query = `
-    *[_type == "system.schema" && name == "location"][0].fields[name=="establishmentType"].options.list[]
-  `;
-
-  try {
-    const types = await sanityClient.fetch(query);
-    console.log(types);
-  } catch (error) {
-    console.error("Error fetching establishment types:", error);
-
-    // Fallback to hardcoded values if the query fails
-    return [
-      { title: "Restaurante", value: "restaurante" },
-      { title: "Café", value: "café" },
-      { title: "Rooftop", value: "rooftop" },
-      { title: "Bar", value: "bar" },
-      { title: "Food Truck", value: "food truck" },
-      { title: "Bistró", value: "bistro" },
-      { title: "Panadería", value: "panadería" },
-      { title: "Pub", value: "pub" },
-    ];
-  }
-};
-
-const getLocactions = async (): Promise<SLocation[]> => {
-  const query = `
-      *[_type == "location"]{
-          ...,
-          "city": city->{
-            ...,
-            "country": country->{
-              ...
-            }
-          }
-        }
-  `;
-
-  const locations = await sanityClient.fetch(query);
-  console.log(locations);
-  return locations;
-};

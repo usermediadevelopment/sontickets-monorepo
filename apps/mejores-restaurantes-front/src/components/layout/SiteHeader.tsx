@@ -4,16 +4,17 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+
 import { Globe, Search, Menu, X, Filter } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import SearchPlaceDropdown from "@/components/SearchPlaceDropdown";
-import CategoryFilter from "@/components/category-filter";
+
 import ActiveFilters from "@/components/active-filters";
 import { mockCities, searchMockData } from "@/lib/mock-data";
 import { type FilterOptions, Place, filterLabels } from "@/lib/types";
-import { useRouter } from "next/navigation";
-import { SearchAmenities } from "../SearchAmenities";
+
+import { SearchGeneral } from "../header/SearchGeneral";
+import DishTypeFilter from "../DishTypeFilter";
+import { SearchPlaces } from "../header/SearchPlaces";
 
 const mockPlaces: Place[] = mockCities.map((city) => ({
   id: city.id,
@@ -23,19 +24,15 @@ const mockPlaces: Place[] = mockCities.map((city) => ({
 
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
-  const [placeSearch, setPlaceSearch] = useState("");
+  const [placeSearch] = useState("");
   const [cuisineSearch, setCuisineSearch] = useState("");
   const [compactSearch, setCompactSearch] = useState("");
 
-  const router = useRouter();
+  const [, setShowLocationDropdown] = useState(false);
+  const [, setShowCuisineDropdown] = useState(false);
+  const [, setShowCompactDropdown] = useState(false);
 
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [showCuisineDropdown, setShowCuisineDropdown] = useState(false);
-  const [showCompactDropdown, setShowCompactDropdown] = useState(false);
-
-  const [filteredPlaces, setFilteredPlaces] = useState<Place[]>(mockPlaces);
-
-  const [selectedCategory] = useState("");
+  const [, setFilteredPlaces] = useState<Place[]>(mockPlaces);
 
   const [filters] = useState<FilterOptions>({
     dietaryRestrictions: [],
@@ -52,9 +49,7 @@ export default function SiteHeader() {
   const cuisineSearchRef = useRef<HTMLInputElement>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSearch = (vara: string, vara2: string, vawwew: string) => {};
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onCategorySelect = (name: string) => {};
+  const onSearch = () => {};
 
   const onRemoveFilter = () => {};
 
@@ -132,20 +127,6 @@ export default function SiteHeader() {
 
     setFilteredPlaces(places);
   }, [placeSearch]);
-
-  // Handle location selection
-  const handleLocationSelect = (place: Place) => {
-    setPlaceSearch(place.name);
-    router.push(`/es-CO/restaurantes/${place.id}`);
-  };
-
-  // Count total active filters
-  const countActiveFilters = () => {
-    return Object.values(filters).reduce(
-      (count, filterArray) => count + filterArray.length,
-      0
-    );
-  };
 
   return (
     <>
@@ -263,54 +244,24 @@ export default function SiteHeader() {
             >
               <div className="text-xs font-medium">Dónde</div>
               <div className="flex items-center">
-                <Input
-                  type="text"
-                  value={placeSearch}
-                  onChange={(e) => {
-                    setPlaceSearch(e.target.value);
-                    onSearch(e.target.value, cuisineSearch, compactSearch);
-                  }}
-                  onFocus={() => setShowLocationDropdown(true)}
-                  placeholder="Buscar por ubicación"
-                  className="border-0 p-0 h-auto text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-                {placeSearch && (
-                  <button
-                    onClick={() => {
-                      setPlaceSearch("");
-                      router.push("/");
-                    }}
-                    className="text-gray-400 hover:text-gray-600 p-1"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
+                <SearchPlaces />
               </div>
-
-              {/* Location Dropdown */}
-              {showLocationDropdown && filteredPlaces.length > 0 && (
-                <SearchPlaceDropdown
-                  items={filteredPlaces}
-                  onSelect={handleLocationSelect}
-                  isMobile={true}
-                />
-              )}
             </div>
 
-            {/* Cuisine Search */}
+            {/* Global Search */}
             <div
               ref={cuisineRef}
               className="flex-1 min-w-0 px-4 py-2 relative w-full mt-2 md:mt-0"
             >
               <div className="text-xs font-medium">Qué</div>
               <div className="flex items-center">
-                <SearchAmenities />
+                <SearchGeneral />
 
                 {cuisineSearch && (
                   <button
                     onClick={() => {
                       setCuisineSearch("");
-                      onSearch(placeSearch ?? "", "", compactSearch);
+                      // onSearch(placeSearch ?? "", "", compactSearch);
                     }}
                     className="text-gray-400 hover:text-gray-600 p-1"
                   >
@@ -348,66 +299,7 @@ export default function SiteHeader() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <ScrollArea className="w-full whitespace-nowrap ">
               <div className="flex space-x-8">
-                <CategoryFilter
-                  icon="all"
-                  label="Todos"
-                  active={selectedCategory === "all"}
-                  onClick={() => onCategorySelect("all")}
-                />
-                <CategoryFilter
-                  icon="italian"
-                  label="Italiana"
-                  active={selectedCategory === "italiana"}
-                  onClick={() => onCategorySelect("italiana")}
-                />
-                <CategoryFilter
-                  icon="mexican"
-                  label="Mexicana"
-                  active={selectedCategory === "mexicana"}
-                  onClick={() => onCategorySelect("mexicana")}
-                />
-                <CategoryFilter
-                  icon="japanese"
-                  label="Japonesa"
-                  active={selectedCategory === "japonesa"}
-                  onClick={() => onCategorySelect("japonesa")}
-                />
-                <CategoryFilter
-                  icon="vegetarian"
-                  label="Vegetariana"
-                  active={selectedCategory === "vegetariana"}
-                  onClick={() => onCategorySelect("vegetariana")}
-                />
-                <CategoryFilter
-                  icon="fastfood"
-                  label="Comida Rápida"
-                  active={selectedCategory === "comida rápida"}
-                  onClick={() => onCategorySelect("comida rápida")}
-                />
-                <CategoryFilter
-                  icon="finedining"
-                  label="Alta Cocina"
-                  active={selectedCategory === "alta cocina"}
-                  onClick={() => onCategorySelect("alta cocina")}
-                />
-                <CategoryFilter
-                  icon="cafe"
-                  label="Cafés"
-                  active={selectedCategory === "café"}
-                  onClick={() => onCategorySelect("café")}
-                />
-                <CategoryFilter
-                  icon="bar"
-                  label="Bares"
-                  active={selectedCategory === "bar"}
-                  onClick={() => onCategorySelect("bar")}
-                />
-                <CategoryFilter
-                  icon="dessert"
-                  label="Postres"
-                  active={selectedCategory === "postres"}
-                  onClick={() => onCategorySelect("postres")}
-                />
+                <DishTypeFilter />
               </div>
               <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
@@ -420,11 +312,11 @@ export default function SiteHeader() {
               >
                 <Filter className="h-4 w-4" />
                 Filtros
-                {countActiveFilters() > 0 && (
+                {/* {countActiveFilters() > 0 && (
                   <Badge className="ml-1 bg-[#FF385C] hover:bg-[#E31C5F] text-white">
                     {countActiveFilters()}
                   </Badge>
-                )}
+                )} */}
               </Button>
             </div>
           </div>

@@ -39,6 +39,25 @@ export type SanityImageDimensions = {
   aspectRatio?: number;
 };
 
+export type Subzone = {
+  _id: string;
+  _type: "subzone";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  zone?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "area";
+  };
+  description?: string;
+  isPopular?: boolean;
+  seo?: Seo;
+};
+
 export type SocialMedia = {
   _type: "socialMedia";
   platform?:
@@ -166,12 +185,117 @@ export type MenuCategory = {
   >;
 };
 
+export type TranslationMetadata = {
+  _id: string;
+  _type: "translation.metadata";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  translations?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayReferenceValue
+  >;
+  schemaTypes?: Array<string>;
+};
+
+export type InternationalizedArrayReferenceValue = {
+  _type: "internationalizedArrayReferenceValue";
+  value?:
+    | {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "restaurant";
+      }
+    | {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "location";
+      }
+    | {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "category";
+      }
+    | {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "country";
+      }
+    | {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "dishType";
+      };
+};
+
+export type DishType = {
+  _id: string;
+  _type: "dishType";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  description?: string;
+  category?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "category";
+  };
+  icon?: string | Element;
+  image?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  popular?: boolean;
+  seo?: Seo;
+};
+
+export type Category = {
+  _id: string;
+  _type: "category";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  name?: string;
+  slug?: Slug;
+  description?: string;
+  icon?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  seo?: Seo;
+};
+
 export type Location = {
   _id: string;
   _type: "location";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  language?: string;
   enabled?: boolean;
   externalId?: string;
   name?: string;
@@ -214,12 +338,19 @@ export type Location = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "city";
   };
-  area?: {
+  zone?: {
     _ref: string;
     _type: "reference";
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "area";
   };
+  subzones?: Array<{
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    _key: string;
+    [internalGroqTypeReferenceTo]?: "subzone";
+  }>;
   address?: string;
   postalCode?: string;
   geoLocation?: Geopoint;
@@ -262,6 +393,8 @@ export type Location = {
       _key: string;
     } & OpeningHour
   >;
+  establishmentType?: Array<string>;
+  foodType?: Array<string>;
   outstandingFeatures?: Array<string>;
   dietaryPreferences?: Array<string>;
   ambiance?: Array<string>;
@@ -302,6 +435,37 @@ export type Area = {
     [internalGroqTypeReferenceTo]?: "city";
   };
   slug?: Slug;
+  description?: string;
+  isPopular?: boolean;
+};
+
+export type City = {
+  _id: string;
+  _type: "city";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  country?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "country";
+  };
+  description?: string;
+  image?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  seo?: Seo;
 };
 
 export type Country = {
@@ -313,6 +477,7 @@ export type Country = {
   name?: string;
   code?: string;
   continent?: string;
+  seo?: Seo;
 };
 
 export type Restaurant = {
@@ -321,6 +486,7 @@ export type Restaurant = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  language?: string;
   name?: string;
   slug?: Slug;
   externalId?: string;
@@ -376,7 +542,6 @@ export type Seo = {
   _type: "seo";
   metaTitle?: string;
   metaDescription?: string;
-  keywords?: Array<string>;
 };
 
 export type SanityFileAsset = {
@@ -399,38 +564,6 @@ export type SanityFileAsset = {
   path?: string;
   url?: string;
   source?: SanityAssetSourceData;
-};
-
-export type City = {
-  _id: string;
-  _type: "city";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  name?: string;
-  slug?: Slug;
-};
-
-export type Category = {
-  _id: string;
-  _type: "category";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  name?: string;
-  slug?: Slug;
-  description?: string;
-  icon?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
 };
 
 export type SanityImageCrop = {
@@ -496,29 +629,40 @@ export type Slug = {
   source?: string;
 };
 
+export type InternationalizedArrayReference = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayReferenceValue
+>;
+
 export type AllSanitySchemaTypes =
   | SanityImagePaletteSwatch
   | SanityImagePalette
   | SanityImageDimensions
+  | Subzone
   | SocialMedia
   | Review
   | OpeningHour
   | MenuItem
   | MenuCategory
+  | TranslationMetadata
+  | InternationalizedArrayReferenceValue
+  | DishType
+  | Category
   | Location
   | ContactInfo
   | Geopoint
   | Area
+  | City
   | Country
   | Restaurant
   | Seo
   | SanityFileAsset
-  | City
-  | Category
   | SanityImageCrop
   | SanityImageHotspot
   | SanityImageAsset
   | SanityAssetSourceData
   | SanityImageMetadata
-  | Slug;
+  | Slug
+  | InternationalizedArrayReference;
 export declare const internalGroqTypeReferenceTo: unique symbol;

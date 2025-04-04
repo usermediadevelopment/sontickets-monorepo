@@ -1,4 +1,4 @@
-import { Category, City, Location, Restaurant } from "./sanity";
+import { Category, City, DishType, Location, Restaurant } from "./sanity";
 
 export type Asset = {
   asset: {
@@ -79,4 +79,8 @@ export interface SLocation
       _key: string;
     } & SOpeningHour
   >;
+}
+
+export interface SDishType extends DishType {
+  iconUrl: string;
 }

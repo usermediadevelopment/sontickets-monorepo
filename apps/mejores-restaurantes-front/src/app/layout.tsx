@@ -8,11 +8,11 @@ const poppins = Poppins({
   display: "swap",
 });
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+type RootLayoutProps = {
   children: React.ReactNode;
-}>) {
+};
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="es" className={poppins.className}>
       <body className="font-sans antialiased">

@@ -34,6 +34,11 @@ export const dishTypeSchema = defineType({
       description: 'The cuisine category this dish type belongs to',
     }),
     defineField({
+      name: 'icon',
+      title: 'Icon',
+      type: 'text',
+    }),
+    defineField({
       name: 'image',
       title: 'Image',
       type: 'image',

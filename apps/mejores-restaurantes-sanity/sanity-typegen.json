@@ -1,5 +1,5 @@
 {
-  "path": "../mejores-restaurantes-frontend/src/**/*.{ts,tsx,js,jsx}",
+  "path": "../mejores-restaurantes-front/src/**/*.{ts,tsx,js,jsx}",
   "schema": "./schema.json",
-  "generates": "../mejores-restaurantes-frontend/src/types/sanity.ts"
+  "generates": "../mejores-restaurantes-front/src/types/sanity.ts"
 }

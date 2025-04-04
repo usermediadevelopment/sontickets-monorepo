@@ -37,7 +37,7 @@ export default defineConfig({
         {id: 'es', title: 'Spanish'},
         {id: 'en', title: 'English'},
       ],
-      schemaTypes: ['restaurant', 'location', 'category'],
+      schemaTypes: ['restaurant', 'location', 'category', 'country', 'dishType'],
     }),
   ],
 
