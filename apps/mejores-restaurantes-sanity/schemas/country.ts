@@ -18,6 +18,19 @@ export const countrySchema = defineType({
       validation: (Rule) => Rule.required().length(2),
     }),
     defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      validation: (Rule) => Rule.required(),
+    }),
+
+    defineField({
+      name: 'localeCode',
+      title: 'Locale Code',
+      type: 'string',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'continent',
       title: 'Continent',
       type: 'string',
