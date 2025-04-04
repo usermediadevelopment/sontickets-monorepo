@@ -60,13 +60,7 @@ export type Subzone = {
 
 export type SocialMedia = {
   _type: "socialMedia";
-  platform?:
-    | "Facebook"
-    | "Twitter"
-    | "Instagram"
-    | "LinkedIn"
-    | "TikTok"
-    | "YouTube";
+  platform?: "Facebook" | "Twitter" | "Instagram" | "LinkedIn" | "TikTok" | "YouTube";
   url?: string;
 };
 
@@ -90,65 +84,10 @@ export type Review = {
 
 export type OpeningHour = {
   _type: "openingHour";
-  day?:
-    | "Monday"
-    | "Tuesday"
-    | "Wednesday"
-    | "Thursday"
-    | "Friday"
-    | "Saturday"
-    | "Sunday";
-  openingTime?:
-    | "1:00"
-    | "1:30"
-    | "2:00"
-    | "2:30"
-    | "3:00"
-    | "3:30"
-    | "4:00"
-    | "4:30"
-    | "5:00"
-    | "5:30"
-    | "6:00"
-    | "6:30"
-    | "7:00"
-    | "7:30"
-    | "8:00"
-    | "8:30"
-    | "9:00"
-    | "9:30"
-    | "10:00"
-    | "10:30"
-    | "11:00"
-    | "11:30"
-    | "12:00"
-    | "12:30";
+  day?: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+  openingTime?: "1:00" | "1:30" | "2:00" | "2:30" | "3:00" | "3:30" | "4:00" | "4:30" | "5:00" | "5:30" | "6:00" | "6:30" | "7:00" | "7:30" | "8:00" | "8:30" | "9:00" | "9:30" | "10:00" | "10:30" | "11:00" | "11:30" | "12:00" | "12:30";
   openingTimeMeridiem?: "AM" | "PM";
-  closingTime?:
-    | "1:00"
-    | "1:30"
-    | "2:00"
-    | "2:30"
-    | "3:00"
-    | "3:30"
-    | "4:00"
-    | "4:30"
-    | "5:00"
-    | "5:30"
-    | "6:00"
-    | "6:30"
-    | "7:00"
-    | "7:30"
-    | "8:00"
-    | "8:30"
-    | "9:00"
-    | "9:30"
-    | "10:00"
-    | "10:30"
-    | "11:00"
-    | "11:30"
-    | "12:00"
-    | "12:30";
+  closingTime?: "1:00" | "1:30" | "2:00" | "2:30" | "3:00" | "3:30" | "4:00" | "4:30" | "5:00" | "5:30" | "6:00" | "6:30" | "7:00" | "7:30" | "8:00" | "8:30" | "9:00" | "9:30" | "10:00" | "10:30" | "11:00" | "11:30" | "12:00" | "12:30";
   closingTimeMeridiem?: "AM" | "PM";
   isClosed?: boolean;
 };
@@ -178,11 +117,9 @@ export type MenuItem = {
 export type MenuCategory = {
   _type: "menuCategory";
   categoryName?: string;
-  items?: Array<
-    {
-      _key: string;
-    } & MenuItem
-  >;
+  items?: Array<{
+    _key: string;
+  } & MenuItem>;
 };
 
 export type TranslationMetadata = {
@@ -191,47 +128,40 @@ export type TranslationMetadata = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  translations?: Array<
-    {
-      _key: string;
-    } & InternationalizedArrayReferenceValue
-  >;
+  translations?: Array<{
+    _key: string;
+  } & InternationalizedArrayReferenceValue>;
   schemaTypes?: Array<string>;
 };
 
 export type InternationalizedArrayReferenceValue = {
   _type: "internationalizedArrayReferenceValue";
-  value?:
-    | {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "restaurant";
-      }
-    | {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "location";
-      }
-    | {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "category";
-      }
-    | {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "country";
-      }
-    | {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "dishType";
-      };
+  value?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "restaurant";
+  } | {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "location";
+  } | {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "category";
+  } | {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "country";
+  } | {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "dishType";
+  };
 };
 
 export type DishType = {
@@ -249,7 +179,7 @@ export type DishType = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "category";
   };
-  icon?: string | Element;
+  icon?: string;
   image?: {
     asset?: {
       _ref: string;
@@ -324,6 +254,13 @@ export type Location = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "restaurant";
   };
+  dishType?: Array<{
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    _key: string;
+    [internalGroqTypeReferenceTo]?: "dishType";
+  }>;
   phoneNumbers?: Array<string>;
   googlePlaceId?: string;
   country?: {
@@ -388,11 +325,9 @@ export type Location = {
     _type: "file";
   };
   urlMenuFile?: string;
-  schedule?: Array<
-    {
-      _key: string;
-    } & OpeningHour
-  >;
+  schedule?: Array<{
+    _key: string;
+  } & OpeningHour>;
   establishmentType?: Array<string>;
   foodType?: Array<string>;
   outstandingFeatures?: Array<string>;
@@ -476,6 +411,8 @@ export type Country = {
   _rev: string;
   name?: string;
   code?: string;
+  slug?: Slug;
+  localeCode?: string;
   continent?: string;
   seo?: Seo;
 };
@@ -527,11 +464,9 @@ export type Restaurant = {
     currency?: "COP" | "EUR" | "GBP";
   };
   contactEmail?: string;
-  socialMedia?: Array<
-    {
-      _key: string;
-    } & SocialMedia
-  >;
+  socialMedia?: Array<{
+    _key: string;
+  } & SocialMedia>;
   seo?: Seo;
   whatsappActive?: boolean;
   whatsappNumber?: string;
@@ -629,40 +564,9 @@ export type Slug = {
   source?: string;
 };
 
-export type InternationalizedArrayReference = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayReferenceValue
->;
+export type InternationalizedArrayReference = Array<{
+  _key: string;
+} & InternationalizedArrayReferenceValue>;
 
-export type AllSanitySchemaTypes =
-  | SanityImagePaletteSwatch
-  | SanityImagePalette
-  | SanityImageDimensions
-  | Subzone
-  | SocialMedia
-  | Review
-  | OpeningHour
-  | MenuItem
-  | MenuCategory
-  | TranslationMetadata
-  | InternationalizedArrayReferenceValue
-  | DishType
-  | Category
-  | Location
-  | ContactInfo
-  | Geopoint
-  | Area
-  | City
-  | Country
-  | Restaurant
-  | Seo
-  | SanityFileAsset
-  | SanityImageCrop
-  | SanityImageHotspot
-  | SanityImageAsset
-  | SanityAssetSourceData
-  | SanityImageMetadata
-  | Slug
-  | InternationalizedArrayReference;
+export type AllSanitySchemaTypes = SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | Subzone | SocialMedia | Review | OpeningHour | MenuItem | MenuCategory | TranslationMetadata | InternationalizedArrayReferenceValue | DishType | Category | Location | ContactInfo | Geopoint | Area | City | Country | Restaurant | Seo | SanityFileAsset | SanityImageCrop | SanityImageHotspot | SanityImageAsset | SanityAssetSourceData | SanityImageMetadata | Slug | InternationalizedArrayReference;
 export declare const internalGroqTypeReferenceTo: unique symbol;
