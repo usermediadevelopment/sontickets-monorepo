@@ -10,39 +10,34 @@ import {
   useSearchBox,
 } from "react-instantsearch";
 import { InstantSearchNext } from "react-instantsearch-nextjs";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { HitsListProps, CustomSearchBoxProps } from "./types";
+import { Hit } from "algoliasearch";
 
 const algoliaAppId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY!;
 
 const searchClient = algoliasearch(algoliaAppId, algoliaApiKey);
 
-let timerId: string | number | NodeJS.Timeout | undefined = undefined;
-const timeout = 500;
-
-function queryHook(query: string, search: (query: string) => void) {
-  if (timerId) {
-    clearTimeout(timerId);
-  }
-
-  timerId = setTimeout(() => search(query), timeout);
-}
+// Default query when search is focused
+const DEFAULT_QUERY = "a";
 
 // Custom SearchBox component that handles default query
 const CustomSearchBox = ({
   defaultQuery = "Popular",
   onFocus,
+  inputValue,
+  setInputValue,
 }: CustomSearchBoxProps) => {
   const { refine } = useSearchBox();
-  const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Set default query when focused
-  const handleFocus = () => {
+  // Set default query when focused - memoized
+  const handleFocus = useCallback(() => {
     const searchPlace = document.getElementById("search-places-input");
     if (pathname === "/" && searchPlace) {
       searchPlace.focus();
@@ -53,22 +48,41 @@ const CustomSearchBox = ({
     if (!inputValue) {
       refine(defaultQuery);
     }
-  };
+  }, [pathname, onFocus, inputValue, defaultQuery, refine]);
 
-  // Clear default query when blurred
-  const handleBlur = () => {
+  // Clear default query when blurred - memoized
+  const handleBlur = useCallback(() => {
     if (inputValue === defaultQuery) {
       setInputValue("");
       refine("");
     }
-  };
+  }, [inputValue, defaultQuery, setInputValue, refine]);
 
-  // Update the query when input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-    queryHook(newValue, refine);
-  };
+  // Update the query when input changes - memoized with debouncing
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      setInputValue(newValue);
+
+      // Debounced search
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      timerRef.current = setTimeout(() => {
+        refine(newValue);
+      }, 300);
+    },
+    [setInputValue, refine]
+  );
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="w-full">
@@ -101,11 +115,11 @@ const HitsList = ({ onClick }: HitsListProps) => {
         return (
           <Link
             href={`${pathname}?${hit.amenityId}=${hit.value}`}
-            className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex  flex-col"
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex flex-col"
             onClick={() => onClick(hit)}
           >
-            <span className="text-xs  text-gray-500">{label}</span>
-            <span className="text-md font-medium">{hit.title}</span>
+            <span className="text-xs text-gray-500">{label}</span>
+            <span className="text-md font-medium">{hit.title as string}</span>
           </Link>
         );
       }}
@@ -115,14 +129,24 @@ const HitsList = ({ onClick }: HitsListProps) => {
 
 export const SearchGeneral = ({}: { isMobile?: boolean }) => {
   const [showHits, setShowHits] = useState(false);
+  const [inputValue, setInputValue] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
   const params = useParams();
 
   const { rest } = params as { rest: string[] };
 
-  // Default query when search is focused
-  const DEFAULT_QUERY = "a";
+  // Memoized handler for handling hit selection
+  const handleHitSelect = useCallback((hit: Hit) => {
+    setInputValue(hit.title as string);
+    setShowHits(false);
+  }, []);
 
+  // Memoized handler for focus event
+  const handleFocus = useCallback(() => {
+    setShowHits(true);
+  }, []);
+
+  // Setup click outside and escape key handlers
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -163,17 +187,23 @@ export const SearchGeneral = ({}: { isMobile?: boolean }) => {
         }}
       >
         <div className="w-full">
-          <CustomSearchBox defaultQuery={DEFAULT_QUERY} />
+          <CustomSearchBox
+            defaultQuery={DEFAULT_QUERY}
+            onFocus={handleFocus}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+          />
         </div>
 
         {showHits && (
-          <div className="absolute left-0 right-0  top-8 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto w-full">
+          <div className="absolute left-0 right-0 top-8 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto w-full">
             <Index indexName="amenities">
-              <HitsList onClick={() => setShowHits(false)} />
+              <HitsList onClick={handleHitSelect} />
             </Index>
             <Index indexName="restaurants">
               <Configure facetFilters={`city:${rest?.[1]}`} />
-              <HitsList onClick={() => setShowHits(false)} />
+
+              <HitsList onClick={handleHitSelect} />
             </Index>
           </div>
         )}

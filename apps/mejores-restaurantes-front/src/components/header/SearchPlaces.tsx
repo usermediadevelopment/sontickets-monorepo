@@ -6,6 +6,8 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 import { CustomSearchBoxProps, HitsListProps } from "./types";
+import { useParams, useSearchParams } from "next/navigation";
+import { SPlace } from "@/types/places";
 
 const algoliaAppId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY!;
@@ -27,9 +29,11 @@ function queryHook(query: string, search: (query: string) => void) {
 const CustomSearchBox = ({
   defaultQuery = "Popular",
   onFocus,
+  setInputValue,
+  inputValue,
 }: CustomSearchBoxProps) => {
   const { refine } = useSearchBox();
-  const [inputValue, setInputValue] = useState("");
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Set default query when focused
@@ -74,23 +78,67 @@ const CustomSearchBox = ({
 
 const HitsList = ({ onClick }: HitsListProps) => {
   const { results } = useHits();
+  const params = useParams();
+  const searchParams = useSearchParams();
 
+  console.log(searchParams.keys());
   if (!results?.hits?.length || !results.query) return null;
-
   return (
     <Hits
       className={``}
-      hitComponent={({ hit }) => {
+      hitComponent={({ hit }: { hit: SPlace }) => {
+        const rest = params.rest as string[];
+
+        // add search params to the href
+        const searchParamsKeys = searchParams.keys();
+
+        const searchParamsArray = Array.from(searchParamsKeys).map((key) => {
+          return { key, value: searchParams.get(key) };
+        });
+
+        const searchParamsString = searchParamsArray
+          .map((item) => `${item.key}=${item.value}`)
+          .join("&");
+
+        let dishType = "";
+
+        if (rest) {
+          //find "dt" in some item
+          dishType = rest.find((item) => item.includes("dt")) || "";
+        }
+
+        console.log(dishType);
+
+        let href = "";
+        // get all search params  in the current pathname and add them to the href
+
+        if (hit.type == "country") {
+          href = `/${hit.country?.localeCode}/restaurantes`;
+        }
+
+        if (hit.type == "city") {
+          href = `/${hit.country?.localeCode}/restaurantes/${hit.slug}${dishType ? `/${dishType}` : ""}${searchParamsString ? `?${searchParamsString}` : ""}`;
+        }
+
+        if (hit.type == "zone") {
+          href = `/${hit.country?.localeCode}/restaurantes/${hit.city?.slug}/${hit.slug}${dishType ? `/${dishType}` : ""}${searchParamsString ? `?${searchParamsString}` : ""}`;
+        }
+
+        if (hit.type == "subzone") {
+          href = `/${hit.country?.localeCode}/restaurantes/${hit.city?.slug}/${hit.zone?.slug}/${hit.slug}${dishType ? `/${dishType}` : ""}${searchParamsString ? `?${searchParamsString}` : ""}`;
+        }
+
         return (
           <Link
-            href={`/${hit.slug}`}
+            href={href}
+            prefetch
+            replace
             className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex flex-col"
-            onClick={() => onClick(hit)}
+            onClick={() => {
+              onClick(hit);
+            }}
           >
             <span className="text-md font-medium">{hit.title}</span>
-            {hit.address && (
-              <span className="text-xs text-gray-500">{hit.address}</span>
-            )}
           </Link>
         );
       }}
@@ -101,6 +149,7 @@ const HitsList = ({ onClick }: HitsListProps) => {
 export const SearchPlaces = ({}: { isMobile?: boolean }) => {
   const [showHits, setShowHits] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const [inputValue, setInputValue] = useState("");
 
   // Default query when search is focused
   const DEFAULT_QUERY = "medellin";
@@ -130,6 +179,11 @@ export const SearchPlaces = ({}: { isMobile?: boolean }) => {
     };
   }, []);
 
+  const handleHitSelect = (hit: SPlace) => {
+    setInputValue(hit.title);
+    setShowHits(false);
+  };
+
   return (
     <div ref={searchRef} className="relative w-full">
       <InstantSearchNext
@@ -144,17 +198,17 @@ export const SearchPlaces = ({}: { isMobile?: boolean }) => {
           },
         }}
       >
-        <div className="w-full">
-          <CustomSearchBox
-            defaultQuery={DEFAULT_QUERY}
-            onFocus={() => setShowHits(true)}
-          />
-        </div>
+        <CustomSearchBox
+          defaultQuery={DEFAULT_QUERY}
+          onFocus={() => setShowHits(true)}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
 
         {showHits && (
           <div className="absolute left-0 right-0 top-8 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto w-full">
             <Index indexName="places">
-              <HitsList onClick={() => setShowHits(false)} />
+              <HitsList onClick={(hit) => handleHitSelect(hit as SPlace)} />
             </Index>
           </div>
         )}

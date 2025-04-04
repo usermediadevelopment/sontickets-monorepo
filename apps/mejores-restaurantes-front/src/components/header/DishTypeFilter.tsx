@@ -7,6 +7,7 @@ import { SDishType } from "@/types/sanity.custom.type";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const getDishTypes = async () => {
   const dishTypes: Partial<SDishType>[] = await sanityClient.fetch(
@@ -30,6 +31,8 @@ const getDishTypes = async () => {
 
 export default function DishTypeFilter() {
   const [dishTypes, setDishTypes] = useState<Partial<SDishType>[]>([]);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchDishTypes = async () => {
@@ -53,6 +56,8 @@ export default function DishTypeFilter() {
           label={dishType.name ?? ""}
           active={false}
           onClick={() => onCategorySelect(dishType.slug?.current ?? "")}
+          pathname={pathname}
+          searchParams={searchParams}
         />
       ))}
     </div>
@@ -65,6 +70,8 @@ interface DishTypeProps {
   active?: boolean;
   slug: string;
   onClick?: () => void;
+  pathname: string;
+  searchParams: URLSearchParams;
 }
 
 const DishTypeComponent = ({
@@ -73,6 +80,8 @@ const DishTypeComponent = ({
   active,
   slug,
   onClick,
+  pathname,
+  searchParams,
 }: DishTypeProps) => {
   const icon = useMemo(() => {
     if (slug == "all") {
@@ -116,9 +125,48 @@ const DishTypeComponent = ({
     return <Image src={iconUrl ?? ""} alt={label} width={24} height={24} />;
   }, [iconUrl, label, slug]);
 
+  // Build the new URL path with the dish type
+  const buildHref = useMemo(() => {
+    // Check if current path contains a dish type segment (containing "dt")
+    const pathParts = pathname.split("/");
+    const hasDishType = pathParts.some((part) => part.includes("-dt"));
+
+    // Handle special case for "all"
+    if (slug === "all") {
+      // If there's a dish type in the path, remove it
+      if (hasDishType) {
+        const newPathParts = pathParts.filter((part) => !part.includes("-dt"));
+        const newPath = newPathParts.join("/");
+        const queryString = searchParams.toString();
+        return queryString ? `${newPath}?${queryString}` : newPath;
+      }
+
+      // Otherwise just return the current path
+      const queryString = searchParams.toString();
+      return queryString ? `${pathname}?${queryString}` : pathname;
+    }
+
+    // For regular dish types
+    if (hasDishType) {
+      // Replace the existing dish type with the new one
+      const newPathParts = pathParts.map((part) =>
+        part.includes("-dt") ? slug : part
+      );
+      const newPath = newPathParts.join("/");
+      const queryString = searchParams.toString();
+      return queryString ? `${newPath}?${queryString}` : newPath;
+    } else {
+      // If no dish type exists, append it to the current path
+      const queryString = searchParams.toString();
+      return queryString
+        ? `${pathname}/${slug}?${queryString}`
+        : `${pathname}/${slug}`;
+    }
+  }, [pathname, searchParams, slug]);
+
   return (
     <Link
-      href={`./${slug}`}
+      href={buildHref}
       className={`flex flex-col items-center space-y-2 cursor-pointer touch-manipulation mx-4`}
       onClick={onClick}
     >

@@ -47,19 +47,4 @@ export const citySchema = defineType({
       type: 'seo',
     }),
   ],
-  preview: {
-    select: {
-      title: 'name',
-      country: 'country.name',
-      media: 'image',
-    },
-    prepare(selection) {
-      const {title, country, media} = selection
-      return {
-        title,
-        subtitle: country ? `Country: ${country}` : '',
-        media,
-      }
-    },
-  },
 })

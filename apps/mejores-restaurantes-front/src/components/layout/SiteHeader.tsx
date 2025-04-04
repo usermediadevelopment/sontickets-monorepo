@@ -13,7 +13,7 @@ import { mockCities, searchMockData } from "@/lib/mock-data";
 import { type FilterOptions, Place, filterLabels } from "@/lib/types";
 
 import { SearchGeneral } from "../header/SearchGeneral";
-import DishTypeFilter from "../DishTypeFilter";
+import DishTypeFilter from "../header/DishTypeFilter";
 import { SearchPlaces } from "../header/SearchPlaces";
 
 const mockPlaces: Place[] = mockCities.map((city) => ({

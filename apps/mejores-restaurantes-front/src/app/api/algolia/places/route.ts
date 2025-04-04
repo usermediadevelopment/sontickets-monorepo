@@ -25,7 +25,8 @@ const getPlaces = async (): Promise<SPlace[]> => {
     "countries": *[_type == "country"]{
       _id,
       name,
-      "slug": slug.current
+      "slug": slug.current,
+      "localeCode": localeCode
     },
     "cities": *[_type == "city"]{
       _id,
@@ -33,7 +34,8 @@ const getPlaces = async (): Promise<SPlace[]> => {
       "slug": slug.current,
       "country": country->{
         name,
-        "slug": slug.current
+        "slug": slug.current,
+        "localeCode": localeCode
       }
     },
     "zones": *[_type == "area"]{
@@ -45,7 +47,8 @@ const getPlaces = async (): Promise<SPlace[]> => {
         "slug": slug.current,
         "country": country->{
           name,
-          "slug": slug.current
+          "slug": slug.current,
+          "localeCode": localeCode
         }
       }
     },
@@ -61,7 +64,8 @@ const getPlaces = async (): Promise<SPlace[]> => {
           "slug": slug.current,
           "country": country->{
             name,
-            "slug": slug.current
+            "slug": slug.current,
+            "localeCode": localeCode
           }
         }
       }
@@ -101,6 +105,7 @@ const getPlaces = async (): Promise<SPlace[]> => {
           ? {
               name: city.country.name,
               slug: city.country.slug,
+              localeCode: city.country.localeCode,
             }
           : undefined,
       });
@@ -134,6 +139,7 @@ const getPlaces = async (): Promise<SPlace[]> => {
           ? {
               name: zone.city.country.name,
               slug: zone.city.country.slug,
+              localeCode: zone.city.country.localeCode,
             }
           : undefined,
       });
@@ -178,6 +184,7 @@ const getPlaces = async (): Promise<SPlace[]> => {
           ? {
               name: subzone.zone.city.country.name,
               slug: subzone.zone.city.country.slug,
+              localeCode: subzone.zone.city.country.localeCode,
             }
           : undefined,
       });
