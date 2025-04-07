@@ -1,7 +1,7 @@
 // populate dish type
 
 import { NextResponse } from "next/server";
-import { sanityClient } from "@/config/client";
+import { sanityClient } from "@/config/sanityClient";
 import { DishType } from "@/types/sanity";
 
 export async function GET() {

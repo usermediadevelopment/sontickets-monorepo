@@ -8,7 +8,6 @@ import {documentInternationalization} from '@sanity/document-internationalizatio
 // Import our custom structure
 import {structure} from './structure'
 import {getDefaultDocumentNode} from './structure/defaultDocumentNode'
-import {internationalizedArray} from 'sanity-plugin-internationalized-array'
 
 export default defineConfig({
   name: 'default',

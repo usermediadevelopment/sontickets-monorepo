@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import RestaurantCard from "@/components/restaurant-card";
+import RestaurantCard from "@/components/RestaurantCard";
 
 import { mockRestaurants } from "@/lib/mock-data";
 import { type FilterOptions } from "@/lib/types";

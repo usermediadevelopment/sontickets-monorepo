@@ -145,7 +145,7 @@ export const locationSchema = defineType({
     }),
 
     defineField({
-      name: 'zone',
+      name: 'area',
       title: 'Zone',
       type: 'reference',
       to: [{type: 'area'}],
@@ -155,8 +155,8 @@ export const locationSchema = defineType({
     defineField({
       name: 'subzones',
       title: 'Subzones',
-      type: 'array',
-      of: [{type: 'reference', to: [{type: 'subzone'}]}],
+      type: 'reference',
+      to: [{type: 'subzone'}],
       description: 'Specific subzones within the main zone',
     }),
 

@@ -1,4 +1,4 @@
-import { sanityClient } from "@/config/client";
+import { sanityClient } from "@/config/sanityClient";
 import { SCity } from "@/types/sanity.custom.type";
 import { useEffect, useState } from "react";
 

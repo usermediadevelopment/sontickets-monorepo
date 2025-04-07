@@ -1,6 +1,6 @@
 "use client";
 
-import { sanityClient } from "@/config/client";
+import { sanityClient } from "@/config/sanityClient";
 import { cn } from "@/lib/utils";
 
 import { SDishType } from "@/types/sanity.custom.type";

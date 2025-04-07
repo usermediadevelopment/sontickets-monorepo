@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { searchClient } from "@algolia/client-search";
-import { sanityClient } from "@/config/client";
+import { sanityClient } from "@/config/sanityClient";
 import {
   SPlace,
   SanityPlacesResult,

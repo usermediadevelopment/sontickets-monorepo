@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Heart } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { filterLabels } from "@/lib/types";
 
 interface RestaurantCardProps {
-  imageUrl: string;
+  imageUrls: string[];
   name: string;
   location: string;
   distance: string;
@@ -24,21 +24,22 @@ interface RestaurantCardProps {
 }
 
 export default function RestaurantCard({
-  imageUrl,
+  imageUrls,
   name,
   distance,
   cuisine,
   priceRange,
   rating,
   popularDish,
-  favorite = false,
+
   dietaryRestrictions = [],
   features = [],
   mealType = [],
 }: RestaurantCardProps) {
-  const [isFavorite, setIsFavorite] = useState(favorite);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = 5;
+  const totalSlides = imageUrls.length;
+
+  const imageUrl = imageUrls[currentSlide];
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -57,24 +58,6 @@ export default function RestaurantCard({
           fill
           className="object-cover"
         />
-
-        {/* Favorite Badge */}
-        {favorite && (
-          <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-            <span className="text-yellow-500">★</span>
-            Favorito entre usuarios
-          </div>
-        )}
-
-        {/* Heart Button */}
-        <button
-          className="absolute top-2 right-2 p-2 rounded-full"
-          onClick={() => setIsFavorite(!isFavorite)}
-        >
-          <Heart
-            className={`h-6 w-6 ${isFavorite ? "fill-red-500 text-red-500" : "text-white"}`}
-          />
-        </button>
 
         {/* Pagination Dots */}
         <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">

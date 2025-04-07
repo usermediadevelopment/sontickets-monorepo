@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { searchClient } from "@algolia/client-search";
-import { sanityClient } from "@/config/client";
+import { sanityClient } from "@/config/sanityClient";
 import { SLocation } from "@/types/sanity.custom.type";
 
 const ALGOLIA_APP_ID = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID;
