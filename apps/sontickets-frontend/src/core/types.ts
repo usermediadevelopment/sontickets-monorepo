@@ -144,6 +144,12 @@ export type Company = {
         };
       };
     };
+    integrations?: {
+      googleAds?: {
+        conversionId: string;
+        conversionTag: string;
+      };
+    };
   };
 };
 

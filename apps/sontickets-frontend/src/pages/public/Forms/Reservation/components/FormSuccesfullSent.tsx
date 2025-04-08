@@ -19,7 +19,7 @@ import {
 import esLocale from 'date-fns/locale/es';
 import enLocale from 'date-fns/locale/en-US';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FormType } from '~/core/types';
+import { Company, FormType } from '~/core/types';
 import { useForm as useFormHook } from '~/hooks/useForm';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '~/hooks/useAuth';
@@ -43,10 +43,10 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   const textSuccess = useRef<HTMLParagraphElement>(null);
   const reservation = useFetchReservation(reservationId);
   // New state to hold company data
-  const [company, setCompany] = useState<any>(null);
+  const [company, setCompany] = useState<Company>();
 
   useEffect(() => {
-    if (textSuccess.current && company.externalId !== 'noi-remb') {
+    if (textSuccess.current && company?.externalId !== 'noi-remb') {
       textSuccess.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -125,7 +125,7 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
           const companyData = companySnapshot.data();
           console.log(companyData);
           if (companyData && typeof companyData === 'object') {
-            setCompany({ id: companySnapshot.id, ...companyData });
+            setCompany({ id: companySnapshot.id, ...companyData } as Company);
           }
         }
       }
@@ -133,7 +133,26 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
     fetchCompany();
   }, [reservation]);
 
-  if (company === null) {
+  useEffect(() => {
+    if (
+      company &&
+      company?.settings?.integrations?.googleAds?.conversionId &&
+      company?.settings?.integrations?.googleAds?.conversionTag
+    ) {
+      const sendTo = `${company?.settings?.integrations?.googleAds?.conversionId}/${company?.settings?.integrations?.googleAds?.conversionTag}`;
+      console.log('sendTo', sendTo);
+      if (window.gtagDataLayer) {
+        const pushData = {
+          event: 'conversion',
+          send_to: sendTo,
+        };
+        console.log('Push Google Ads', pushData);
+        window.gtagDataLayer.push(pushData);
+      }
+    }
+  }, [company]);
+
+  if (!company) {
     return (
       <VStack alignItems='center' justifyContent='center'>
         <Spinner size={'xl'} />;
@@ -141,7 +160,7 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
     );
   }
 
-  if (company.externalId === 'noi-remb') {
+  if (company?.externalId === 'noi-remb') {
     return (
       <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
         <ReservationSummary
