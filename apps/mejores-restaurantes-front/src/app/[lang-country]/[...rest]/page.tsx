@@ -3,19 +3,57 @@ import { getLocations } from "@/services/sanity/locations";
 
 type RestaurantPageProps = {
   params: Promise<{ "lang-country": string; rest: string[] }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default async function RestaurantPage({ params }: RestaurantPageProps) {
-  const { "lang-country": langCountry, rest } = await params;
+// Helper function to parse comma-separated string or array of strings from searchParams
+const getArrayParam = (param: string | string[] | undefined): string[] => {
+  if (!param) return [];
+  if (Array.isArray(param)) return param; // Handle cases where query parser might return array
+  return param
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+export default async function RestaurantPage({
+  params,
+  searchParams,
+}: RestaurantPageProps) {
+  const { rest } = await params;
   console.log("server");
-  console.log(langCountry, rest);
 
   const city = rest.find((r) => r.includes("-city")) || "";
   const zone = rest.find((r) => r.includes("-zon")) || "";
   const subzone = rest.find((r) => r.includes("-subz")) || "";
   const dishType = rest.find((r) => r.includes("-dt")) || "";
+  const queryParams = await searchParams;
 
-  const locations = await getLocations(city, zone, subzone, dishType);
+  // Extract filter parameters
+  const facilities = getArrayParam(queryParams.facilities);
+  const entertainment = getArrayParam(queryParams.entertainment);
+  const suitableFor = getArrayParam(queryParams.suitableFor);
+  const paymentOptions = getArrayParam(queryParams.paymentOptions);
+  const dietaryPreferences = getArrayParam(queryParams.dietaryPreferences);
+  const outstandingFeatures = getArrayParam(queryParams.outstandingFeatures);
+  const foodType = getArrayParam(queryParams.foodType);
+  const establishmentType = getArrayParam(queryParams.establishmentType);
+
+  console.log("queryParams", queryParams);
+  const locations = await getLocations(
+    city,
+    zone,
+    subzone,
+    dishType,
+    facilities,
+    entertainment,
+    suitableFor,
+    paymentOptions,
+    dietaryPreferences,
+    outstandingFeatures,
+    foodType,
+    establishmentType
+  );
 
   return (
     <div className="min-h-screen bg-white">
