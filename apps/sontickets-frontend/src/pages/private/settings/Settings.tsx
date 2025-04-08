@@ -28,6 +28,7 @@ import {
   formatDate,
   formatHourWithPeriod,
 } from '~/utils/date';
+import Integrations from './children/integrations/Integrations';
 
 const Settings = () => {
   const { user } = useAuth();
@@ -40,10 +41,16 @@ const Settings = () => {
         Configuración
       </Text>
       <Tabs isLazy ml={5}>
-        <TabList>
+        <TabList
+          _selected={{
+            color: 'teal.600',
+            borderColor: 'teal.500',
+          }}
+        >
           <Tab>General</Tab>
           <Tab>Formulario de reserva</Tab>
           <Tab>Email</Tab>
+          <Tab>Integraciones</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -93,6 +100,9 @@ const Settings = () => {
 
           <TabPanel>
             <Emails />
+          </TabPanel>
+          <TabPanel>
+            <Integrations />
           </TabPanel>
         </TabPanels>
       </Tabs>
