@@ -47,7 +47,7 @@ export default function DishTypeFilter() {
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-nowrap grow space-x-8 ">
       {dishTypes.map((dishType) => (
         <DishTypeComponent
           key={dishType._id}

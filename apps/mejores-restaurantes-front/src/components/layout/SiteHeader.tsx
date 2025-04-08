@@ -9,30 +9,22 @@ import { Globe, Search, Menu, X, Filter } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 import ActiveFilters from "@/components/active-filters";
-import { mockCities, searchMockData } from "@/lib/mock-data";
-import { type FilterOptions, Place, filterLabels } from "@/lib/types";
+
+import { type FilterOptions, filterLabels } from "@/lib/types";
 
 import { SearchGeneral } from "../header/SearchGeneral";
 import DishTypeFilter from "../header/DishTypeFilter";
 import { SearchPlaces } from "../header/SearchPlaces";
 
-const mockPlaces: Place[] = mockCities.map((city) => ({
-  id: city.id,
-  name: city.name,
-  type: city.type as "city" | "zone" | "subzone",
-}));
-
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
-  const [placeSearch] = useState("");
+
   const [cuisineSearch, setCuisineSearch] = useState("");
   const [compactSearch, setCompactSearch] = useState("");
 
   const [, setShowLocationDropdown] = useState(false);
   const [, setShowCuisineDropdown] = useState(false);
   const [, setShowCompactDropdown] = useState(false);
-
-  const [, setFilteredPlaces] = useState<Place[]>(mockPlaces);
 
   const [filters] = useState<FilterOptions>({
     dietaryRestrictions: [],
@@ -48,11 +40,7 @@ export default function SiteHeader() {
 
   const cuisineSearchRef = useRef<HTMLInputElement>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSearch = () => {};
-
   const onRemoveFilter = () => {};
-
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -96,37 +84,6 @@ export default function SiteHeader() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  /*   // Filter locations based on input
-  const filteredLocations = locationSearch
-    ? mockCities.filter((location) =>
-        location.name.toLowerCase().includes(locationSearch.toLowerCase())
-      )
-    : mockCities;
-
-  // Combined search results for compact search
-  const compactSearchResults = compactSearch
-    ? [
-        ...new Set([
-          ...mockCities.filter((location) =>
-            location.name.toLowerCase().includes(compactSearch.toLowerCase())
-          ),
-        ]),
-      ]
-    : []; */
-
-  useEffect(() => {
-    const results = searchMockData(placeSearch);
-
-    // Convert to Place type
-    const places: Place[] = results.map((place) => ({
-      id: place.id,
-      name: place.name,
-      type: place.type as "city" | "zone" | "subzone",
-    }));
-
-    setFilteredPlaces(places);
-  }, [placeSearch]);
 
   return (
     <>
@@ -296,27 +253,27 @@ export default function SiteHeader() {
 
         {/* Category Filters */}
         <div className="container mx-auto px-4 py-4 ">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-            <ScrollArea className="w-full whitespace-nowrap ">
+          <div className="flex  md:flex-col items-start md:items-center justify-between">
+            <ScrollArea className="w-8/12 whitespace-nowrap ">
               <div className="flex space-x-8">
                 <DishTypeFilter />
               </div>
               <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
 
-            <div className="flex items-center mt-4 md:mt-0 md:ml-4  w-full md:w-auto justify-between md:justify-start">
+            <div className="flex items-center mt-4 md:mt-0 space-x-4 w-full md:w-auto justify-between md:justify-start">
               <Button
                 variant="outline"
-                className="rounded-lg flex items-center gap-2 text-xs md:text-sm"
+                className="rounded-lg flex items-center gap-2 text-xs md:text-sm ml-4 flex-shrink-0"
                 /*     onClick={() => setShowFiltersModal(true)} */
               >
                 <Filter className="h-4 w-4" />
                 Filtros
                 {/* {countActiveFilters() > 0 && (
-                  <Badge className="ml-1 bg-[#FF385C] hover:bg-[#E31C5F] text-white">
-                    {countActiveFilters()}
-                  </Badge>
-                )} */}
+                <Badge className="ml-1 bg-[#FF385C] hover:bg-[#E31C5F] text-white">
+                  {countActiveFilters()}
+                </Badge>
+              )} */}
               </Button>
             </div>
           </div>

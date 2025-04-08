@@ -14,7 +14,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="es" className={poppins.className}>
+    <html className={poppins.className}>
       <body className="font-sans antialiased">
         <SiteHeader />
 
