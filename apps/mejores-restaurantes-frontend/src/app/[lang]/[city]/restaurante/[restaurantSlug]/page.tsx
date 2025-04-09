@@ -438,19 +438,21 @@ export default function RestaurantPage({
                     >
                       Reservar Ahora
                     </Button>
-                    <Button
-                      onClick={() => setOpenWhatsAppModal(true)}
-                      className="rounded-full  w-9 h-9 shadow-sm shadow-slate-400 bg-[#25D366] hover:bg-[#25D366] hover:opacity-80 text-white flex items-center justify-center "
-                      aria-label="WhatsApp"
-                    >
-                      <WhatsappIcon
-                        style={{
-                          width: 20,
-                          height: 20,
-                          fill: "white",
-                        }}
-                      />
-                    </Button>
+                    {location?.restaurant?.whatsappActive && (
+                      <Button
+                        onClick={() => setOpenWhatsAppModal(true)}
+                        className="rounded-full  w-9 h-9 shadow-sm shadow-slate-400 bg-[#25D366] hover:bg-[#25D366] hover:opacity-80 text-white flex items-center justify-center "
+                        aria-label="WhatsApp"
+                      >
+                        <WhatsappIcon
+                          style={{
+                            width: 20,
+                            height: 20,
+                            fill: "white",
+                          }}
+                        />
+                      </Button>
+                    )}
                   </div>
                 </div>
 
