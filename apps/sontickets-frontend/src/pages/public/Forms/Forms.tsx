@@ -51,9 +51,9 @@ export const Forms = () => {
       script.async = true;
       document.head.appendChild(script);
 
-      window.gtagDataLayer = window.gtagDataLayer || [];
+      window.dataLayer = window.dataLayer || [];
       function gtag() {
-        window.gtagDataLayer.push(arguments);
+        window.dataLayer.push(arguments);
       }
       window.gtag = gtag;
       window.gtag('js', new Date());

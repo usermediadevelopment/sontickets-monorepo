@@ -141,13 +141,13 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
     ) {
       const sendTo = `${company?.settings?.integrations?.googleAds?.conversionId}/${company?.settings?.integrations?.googleAds?.conversionTag}`;
       console.log('sendTo', sendTo);
-      if (window.gtagDataLayer) {
+      if (window.dataLayer) {
         const pushData = {
           event: 'conversion',
           send_to: sendTo,
         };
         console.log('Push Google Ads', pushData);
-        window.gtagDataLayer.push(pushData);
+        window.dataLayer.push(pushData);
       }
     }
   }, [company]);
