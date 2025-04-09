@@ -2,7 +2,7 @@
 
 import { sanityClient } from "@/config/sanityClient";
 import { cn } from "@/lib/utils";
-
+import { useFilters } from "@/providers/FilterProvider";
 import { SDishType } from "@/types/sanity.custom.type";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -33,6 +33,7 @@ export default function DishTypeFilter() {
   const [dishTypes, setDishTypes] = useState<Partial<SDishType>[]>([]);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { setDishType, applyFilters } = useFilters();
 
   useEffect(() => {
     const fetchDishTypes = async () => {
@@ -43,7 +44,22 @@ export default function DishTypeFilter() {
   }, []);
 
   const onCategorySelect = (category: string) => {
-    console.log(category);
+    // If selecting "all", clear the dish type filter
+    if (category === "all") {
+      setDishType("");
+    } else {
+      setDishType(category);
+    }
+    // Apply filters immediately to update the URL
+    applyFilters();
+  };
+
+  // Check if a dish type is active based on URL
+  const isActive = (slug: string) => {
+    if (slug === "all") {
+      return !pathname.split("/").some((part) => part.includes("-dt"));
+    }
+    return pathname.includes(slug);
   };
 
   return (
@@ -54,7 +70,7 @@ export default function DishTypeFilter() {
           iconUrl={dishType.iconUrl}
           slug={dishType.slug?.current ?? ""}
           label={dishType.name ?? ""}
-          active={false}
+          active={isActive(dishType.slug?.current ?? "")}
           onClick={() => onCategorySelect(dishType.slug?.current ?? "")}
           pathname={pathname}
           searchParams={searchParams}

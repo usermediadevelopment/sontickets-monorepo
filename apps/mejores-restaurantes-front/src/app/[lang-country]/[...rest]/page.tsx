@@ -39,7 +39,6 @@ export default async function RestaurantPage({
   const foodType = getArrayParam(queryParams.foodType);
   const establishmentType = getArrayParam(queryParams.establishmentType);
 
-  console.log("queryParams", queryParams);
   const locations = await getLocations(
     city,
     zone,

@@ -9,6 +9,7 @@ import { Globe, Search, Menu, X, Filter } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 import ActiveFilters from "@/components/active-filters";
+import FiltersModal from "@/components/FiltersModal";
 
 import { type FilterOptions, filterLabels } from "@/lib/types";
 
@@ -18,6 +19,7 @@ import { SearchPlaces } from "../header/SearchPlaces";
 
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
 
   const [cuisineSearch, setCuisineSearch] = useState("");
   const [compactSearch, setCompactSearch] = useState("");
@@ -253,19 +255,19 @@ export default function SiteHeader() {
 
         {/* Category Filters */}
         <div className="container mx-auto px-4 py-4 ">
-          <div className="flex  md:flex-col items-start md:items-center justify-between">
-            <ScrollArea className="w-8/12 whitespace-nowrap ">
+          <div className="flex items-start md:items-center justify-between ">
+            <ScrollArea className="w-full whitespace-nowrap ">
               <div className="flex space-x-8">
                 <DishTypeFilter />
               </div>
               <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
 
-            <div className="flex items-center mt-4 md:mt-0 space-x-4 w-full md:w-auto justify-between md:justify-start">
+            <div className="items-center hidden md:flex space-x-4 w-full justify-end pt-1  ">
               <Button
                 variant="outline"
                 className="rounded-lg flex items-center gap-2 text-xs md:text-sm ml-4 flex-shrink-0"
-                /*     onClick={() => setShowFiltersModal(true)} */
+                onClick={() => setShowFiltersModal(true)}
               >
                 <Filter className="h-4 w-4" />
                 Filtros
@@ -288,6 +290,12 @@ export default function SiteHeader() {
           </div>
         </div>
       </div>
+
+      {/* Filters Modal */}
+      <FiltersModal
+        open={showFiltersModal}
+        onClose={() => setShowFiltersModal(false)}
+      />
     </>
   );
 }

@@ -11,10 +11,10 @@ import {
 } from "react-instantsearch";
 import { InstantSearchNext } from "react-instantsearch-nextjs";
 import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { HitsListProps, CustomSearchBoxProps } from "./types";
 import { Hit } from "algoliasearch";
+import { useFilters } from "@/providers/FilterProvider";
 
 const algoliaAppId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY!;
@@ -35,6 +35,7 @@ const CustomSearchBox = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const { setSearchQuery } = useFilters();
 
   // Set default query when focused - memoized
   const handleFocus = useCallback(() => {
@@ -63,6 +64,7 @@ const CustomSearchBox = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
       setInputValue(newValue);
+      setSearchQuery(newValue);
 
       // Debounced search
       if (timerRef.current) {
@@ -72,7 +74,7 @@ const CustomSearchBox = ({
         refine(newValue);
       }, 300);
     },
-    [setInputValue, refine]
+    [setInputValue, refine, setSearchQuery]
   );
 
   // Clean up timer on unmount
@@ -102,7 +104,7 @@ const CustomSearchBox = ({
 
 const HitsList = ({ onClick }: HitsListProps) => {
   const { results } = useHits();
-  const pathname = usePathname();
+  const { setAmenityFilter, applyFilters } = useFilters();
 
   if (!results?.hits?.length || !results.query) return null;
 
@@ -112,15 +114,22 @@ const HitsList = ({ onClick }: HitsListProps) => {
       hitComponent={({ hit }) => {
         const label = hit.type === "amenity" ? hit.amenityLabel : "Restaurante";
 
+        const handleHitClick = () => {
+          onClick(hit);
+          if (hit.type === "amenity" && hit.amenityId) {
+            setAmenityFilter(hit.amenityId as string, hit.value as string);
+            applyFilters();
+          }
+        };
+
         return (
-          <Link
-            href={`${pathname}?${hit.amenityId}=${hit.value}`}
+          <div
             className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex flex-col"
-            onClick={() => onClick(hit)}
+            onClick={handleHitClick}
           >
             <span className="text-xs text-gray-500">{label}</span>
             <span className="text-md font-medium">{hit.title as string}</span>
-          </Link>
+          </div>
         );
       }}
     />
@@ -132,6 +141,8 @@ export const SearchGeneral = ({}: { isMobile?: boolean }) => {
   const [inputValue, setInputValue] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
   const params = useParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const { rest } = params as { rest: string[] };
 
@@ -145,6 +156,15 @@ export const SearchGeneral = ({}: { isMobile?: boolean }) => {
   const handleFocus = useCallback(() => {
     setShowHits(true);
   }, []);
+
+  // Effect to clear query params when input is empty
+  useEffect(() => {
+    if (inputValue === "") {
+      if (window.location.search) {
+        router.replace(pathname);
+      }
+    }
+  }, [inputValue, router, pathname]);
 
   // Setup click outside and escape key handlers
   useEffect(() => {

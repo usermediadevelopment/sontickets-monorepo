@@ -8,6 +8,7 @@ import Link from "next/link";
 import { CustomSearchBoxProps, HitsListProps } from "./types";
 import { useParams, useSearchParams } from "next/navigation";
 import { SPlace } from "@/types/places";
+import { useFilters } from "@/providers/FilterProvider";
 
 const algoliaAppId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY!;
@@ -33,7 +34,7 @@ const CustomSearchBox = ({
   inputValue,
 }: CustomSearchBoxProps) => {
   const { refine } = useSearchBox();
-
+  const { setSearchQuery } = useFilters();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Set default query when focused
@@ -56,6 +57,7 @@ const CustomSearchBox = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
+    setSearchQuery(newValue);
     queryHook(newValue, refine);
   };
 
