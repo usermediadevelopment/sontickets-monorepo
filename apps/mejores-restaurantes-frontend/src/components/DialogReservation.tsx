@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import useIsDesktop from "@/hooks/useIsDesktop";
 import { SLocation } from "@/types/sanity.custom.type";
+import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 
 type DialogReservationProps = {
   open: boolean;
@@ -23,6 +25,23 @@ export const DialogReservation = ({
   location,
 }: DialogReservationProps) => {
   const isDesktop = useIsDesktop();
+  const searchParams = useSearchParams();
+
+  const reservationUrl = useMemo(() => {
+    if (!location.restaurant?.reservationUrl) return "";
+
+    const baseUrl = location.restaurant.reservationUrl;
+    const currentQueryString = searchParams.toString();
+
+    if (!currentQueryString) return baseUrl;
+
+    // Check if baseUrl already has query parameters
+    const hasQueryParams = baseUrl.includes("?");
+    const connector = hasQueryParams ? "&" : "?";
+
+    return `${baseUrl}${connector}${currentQueryString}`;
+  }, [location.restaurant?.reservationUrl, searchParams]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full md:min-w-[600px] pb-10 md:pb-5">
@@ -39,7 +58,7 @@ export const DialogReservation = ({
         <div className="grid gap-4 py-4">
           <embed
             title="reservas"
-            src={location.restaurant?.reservationUrl}
+            src={reservationUrl}
             height={isDesktop ? 550 : 400}
             width="100%"
           ></embed>
