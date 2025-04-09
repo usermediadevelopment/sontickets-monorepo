@@ -61,7 +61,7 @@ export const GoogleAds = () => {
           const googleAdsSettings = companyData.settings?.integrations?.googleAds;
 
           if (googleAdsSettings) {
-            setValue('conversionId', googleAdsSettings.conversionId);
+            setValue('conversionId', googleAdsSettings.conversionId.replace('AW-', ''));
             setValue('conversionTag', googleAdsSettings.conversionTag);
           }
         }
