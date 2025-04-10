@@ -29,6 +29,14 @@ import firebaseFirestore from '~/config/firebase/firestore/firestore';
 import useFetchReservation from '~/hooks/useFetchReservation';
 import { formatDate, formatHourWithPeriod, getTimestampUtcToZonedTime } from '~/utils/date';
 import ReservationSummary from './ReservationSummary';
+import { Helmet } from 'react-helmet-async';
+
+// Declare the global gtag_report_conversion function
+declare global {
+  interface Window {
+    gtag_report_conversion: (url?: string) => boolean;
+  }
+}
 
 export type FormSuccesfullSentProps = {
   onBack?: () => void;
@@ -134,23 +142,12 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   }, [reservation]);
 
   useEffect(() => {
-    if (
-      company &&
-      company?.settings?.integrations?.googleAds?.conversionId &&
-      company?.settings?.integrations?.googleAds?.conversionTag
-    ) {
-      const sendTo = `${company?.settings?.integrations?.googleAds?.conversionId}/${company?.settings?.integrations?.googleAds?.conversionTag}`;
-      console.log('sendTo', sendTo);
-      if (window.dataLayer) {
-        const pushData = {
-          event: 'conversion',
-          send_to: sendTo,
-        };
-        console.log('Push Google Ads', pushData);
-        window.dataLayer.push(pushData);
+    setTimeout(() => {
+      if (typeof window !== 'undefined' && window.gtag_report_conversion) {
+        window.gtag_report_conversion();
       }
-    }
-  }, [company]);
+    }, 3000);
+  }, []);
 
   if (!company) {
     return (
@@ -163,6 +160,7 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   if (company?.externalId === 'noi-remb') {
     return (
       <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
+        <FormSuccesfullSentWithGoogleAds company={company} />
         <ReservationSummary
           reservation={reservation}
           goBack={() => {
@@ -174,8 +172,10 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
       </VStack>
     );
   }
+
   return (
     <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
+      <FormSuccesfullSentWithGoogleAds company={company} />
       <Text textAlign={'center'} fontWeight={'bold'}>
         {t('reserve_confirmation.title_chunk_1')} {reservation?.namesAndSurnames as string}{' '}
         {t('reserve_confirmation.title_chunk_2')} #{reservation?.code as string}{' '}
@@ -224,6 +224,52 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
         </Popover>
       </HStack>
     </VStack>
+  );
+};
+
+type FormSuccesfullSentWithGoogleAdsProps = {
+  company: Company;
+};
+
+const FormSuccesfullSentWithGoogleAds = ({ company }: FormSuccesfullSentWithGoogleAdsProps) => {
+  if (
+    !company.settings.integrations?.googleAds?.conversionId ||
+    company.settings.integrations?.googleAds?.conversionId
+  ) {
+    return <></>;
+  }
+
+  return (
+    <Helmet>
+      {/* Google tag (gtag.js) */}
+      <script
+        async
+        src={`https://www.googletagmanager.com/gtag/js?id=${company.settings.integrations?.googleAds?.conversionId}`}
+      ></script>
+      <script>
+        {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${company.settings.integrations?.googleAds?.conversionId}');
+    `}
+      </script>
+
+      {/* Event snippet for reservation conversion */}
+      <script>
+        {`
+    function gtag_report_conversion(url) {
+  
+      gtag('event', 'conversion', {
+        'send_to': '${company.settings.integrations?.googleAds?.conversionId}/${company.settings.integrations?.googleAds?.conversionTag}',
+       
+      });
+      return false;
+    }
+    window.gtag_report_conversion = gtag_report_conversion;
+    `}
+      </script>
+    </Helmet>
   );
 };
 

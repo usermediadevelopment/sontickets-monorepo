@@ -9,6 +9,7 @@ import {
   useLocation,
   useNavigationType,
 } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import theme from './config/theme';
 import 'react-toastify/dist/ReactToastify.css';
 import Router from './router';
@@ -53,11 +54,13 @@ declare global {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ChakraProvider theme={theme}>
-        <AuthProvider>
-          <Router />
-        </AuthProvider>
-      </ChakraProvider>
+      <HelmetProvider>
+        <ChakraProvider theme={theme}>
+          <AuthProvider>
+            <Router />
+          </AuthProvider>
+        </ChakraProvider>
+      </HelmetProvider>
       <ToastContainer />
     </BrowserRouter>
   </React.StrictMode>
