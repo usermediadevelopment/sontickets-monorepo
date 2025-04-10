@@ -234,7 +234,7 @@ type FormSuccesfullSentWithGoogleAdsProps = {
 const FormSuccesfullSentWithGoogleAds = ({ company }: FormSuccesfullSentWithGoogleAdsProps) => {
   if (
     !company.settings.integrations?.googleAds?.conversionId ||
-    company.settings.integrations?.googleAds?.conversionId
+    !company.settings.integrations?.googleAds?.conversionTag
   ) {
     return <></>;
   }
