@@ -171,60 +171,60 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
         />
       </VStack>
     );
+  } else {
+    return (
+      <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
+        <FormSuccesfullSentWithGoogleAds company={company} />
+        <Text textAlign={'center'} fontWeight={'bold'}>
+          {t('reserve_confirmation.title_chunk_1')} {reservation?.namesAndSurnames as string}{' '}
+          {t('reserve_confirmation.title_chunk_2')} #{reservation?.code as string}{' '}
+          {t('reserve_confirmation.title_chunk_3')}
+          {' ' + getDay + ' ' + getStarHour + ' ' + getEndHour}
+        </Text>
+        <Text textAlign={'center'}>{t('reserve_confirmation.text_email_sent')} </Text>
+        <Box pt={8} />
+        <HStack>
+          <Button
+            onClick={() => {
+              onBack!();
+
+              changeForm(FormType.NEW_RESERVATION);
+            }}
+          >
+            {t('general.text_return')}
+          </Button>
+          <Popover isOpen={isOpen} onClose={onClose}>
+            <PopoverTrigger>
+              <Button onClick={onToggle} colorScheme='red'>
+                {t('general.cancel_reservation')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverHeader fontWeight='semibold'>{t('general.cancel_reservation')}</PopoverHeader>
+              <PopoverArrow />
+              <PopoverCloseButton />
+              <PopoverBody>{t('reservation_form.question_cancel')}</PopoverBody>
+              <PopoverFooter display='flex' justifyContent='flex-end'>
+                <ButtonGroup size='sm'>
+                  <Button onClick={onToggle} colorScheme='red'>
+                    {t('general.text_not_close')}
+                  </Button>
+                  <Button
+                    isLoading={isCanceling}
+                    loadingText='Submitting'
+                    onClick={handleCancelReservation}
+                    variant='outline'
+                  >
+                    {t('general.text_yes_cancel')}
+                  </Button>
+                </ButtonGroup>
+              </PopoverFooter>
+            </PopoverContent>
+          </Popover>
+        </HStack>
+      </VStack>
+    );
   }
-
-  return (
-    <VStack ref={textSuccess} alignItems='center' justifyContent='center'>
-      <FormSuccesfullSentWithGoogleAds company={company} />
-      <Text textAlign={'center'} fontWeight={'bold'}>
-        {t('reserve_confirmation.title_chunk_1')} {reservation?.namesAndSurnames as string}{' '}
-        {t('reserve_confirmation.title_chunk_2')} #{reservation?.code as string}{' '}
-        {t('reserve_confirmation.title_chunk_3')}
-        {' ' + getDay + ' ' + getStarHour + ' ' + getEndHour}
-      </Text>
-      <Text textAlign={'center'}>{t('reserve_confirmation.text_email_sent')} </Text>
-      <Box pt={8} />
-      <HStack>
-        <Button
-          onClick={() => {
-            onBack!();
-
-            changeForm(FormType.NEW_RESERVATION);
-          }}
-        >
-          {t('general.text_return')}
-        </Button>
-        <Popover isOpen={isOpen} onClose={onClose}>
-          <PopoverTrigger>
-            <Button onClick={onToggle} colorScheme='red'>
-              {t('general.cancel_reservation')}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <PopoverHeader fontWeight='semibold'>{t('general.cancel_reservation')}</PopoverHeader>
-            <PopoverArrow />
-            <PopoverCloseButton />
-            <PopoverBody>{t('reservation_form.question_cancel')}</PopoverBody>
-            <PopoverFooter display='flex' justifyContent='flex-end'>
-              <ButtonGroup size='sm'>
-                <Button onClick={onToggle} colorScheme='red'>
-                  {t('general.text_not_close')}
-                </Button>
-                <Button
-                  isLoading={isCanceling}
-                  loadingText='Submitting'
-                  onClick={handleCancelReservation}
-                  variant='outline'
-                >
-                  {t('general.text_yes_cancel')}
-                </Button>
-              </ButtonGroup>
-            </PopoverFooter>
-          </PopoverContent>
-        </Popover>
-      </HStack>
-    </VStack>
-  );
 };
 
 type FormSuccesfullSentWithGoogleAdsProps = {
