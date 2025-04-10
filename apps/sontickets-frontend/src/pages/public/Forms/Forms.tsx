@@ -6,6 +6,7 @@ import { Company } from '~/core/types';
 import useGetParam from '~/hooks/useGetParam';
 import { Center, Link, Spinner, Text } from '@chakra-ui/react';
 import Form from './Reservation/Form';
+import { Helmet } from 'react-helmet-async';
 
 export const Forms = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -73,6 +74,38 @@ export const Forms = () => {
 
   return (
     <>
+      {company?.settings.integrations?.googleAds?.conversionId && (
+        <Helmet>
+          {/* Google tag (gtag.js) */}
+          <script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${company?.settings.integrations?.googleAds?.conversionId}`}
+          ></script>
+          <script>
+            {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${company?.settings.integrations?.googleAds?.conversionId}');
+    `}
+          </script>
+
+          {/* Event snippet for reservation conversion */}
+          <script>
+            {`
+    function gtag_report_conversion(url) {
+  
+      gtag('event', 'conversion', {
+        'send_to': '${company?.settings.integrations?.googleAds?.conversionId}/${company?.settings.integrations?.googleAds?.conversionTag}',
+       
+      });
+      return false;
+    }
+    window.gtag_report_conversion = gtag_report_conversion;
+          `}
+          </script>
+        </Helmet>
+      )}
       <Form />
 
       <Text fontSize={'sm'} textAlign={'center'} mt={10}>

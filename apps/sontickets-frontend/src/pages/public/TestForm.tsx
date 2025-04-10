@@ -15,13 +15,13 @@ const TestForm = () => {
     <>
       <Helmet>
         {/* Google tag (gtag.js) */}
-        <script async src='https://www.googletagmanager.com/gtag/js?id=AW-11171348235'></script>
+        <script async src='https://www.googletagmanager.com/gtag/js?id=AW-437148397'></script>
         <script>
           {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'AW-11171348235');
+          gtag('config', 'AW-437148397');
           `}
         </script>
 
@@ -35,7 +35,7 @@ const TestForm = () => {
               }
             };
             gtag('event', 'conversion', {
-              'send_to': 'AW-11171348235/QRFpCICP87YaEIv-9M4p',
+              'send_to': 'AW-437148397/cP08COGm-LYaEO21udAB',
               'event_callback': callback
             });
             return false;
