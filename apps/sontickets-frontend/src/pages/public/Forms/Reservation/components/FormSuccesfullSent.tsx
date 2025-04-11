@@ -53,33 +53,10 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   const [company, setCompany] = useState<Company>();
 
   useEffect(() => {
-    if (textSuccess.current && company?.externalId !== 'noi-remb') {
+    if (textSuccess.current) {
       textSuccess.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
     }
-
-    try {
-      // Try to scroll the parent window if we're in an iframe
-      if (window.parent !== window) {
-        console.log('scroll to parent');
-        textSuccess.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-        });
-
-        setTimeout(() => {
-          window.parent.scrollTo({ top: window.innerHeight - 100, behavior: 'smooth' });
-        }, 2000);
-      } else {
-        // Fallback to regular window scroll if not in iframe
-        console.log('scroll to current');
-        textSuccess.current?.scrollTo({ top: 200, behavior: 'smooth' });
-      }
-    } catch (error) {
-      // Handle any potential cross-origin issues silently
-      console.warn('Could not scroll parent window:', error);
-    }
-  }, [textSuccess, company]);
+  }, [textSuccess]);
 
   const handleCancelReservation = async () => {
     setIsCanceling(true);
@@ -140,9 +117,15 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
     fetchCompany();
   }, [reservation]);
 
+  // Track conversion when component mounts
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.gtag_report_conversion) {
-      window.gtag_report_conversion();
+    // Match the TestForm implementation - call the function directly
+    if (typeof window !== 'undefined') {
+      try {
+        window.gtag_report_conversion();
+      } catch (error) {
+        console.error('Error calling gtag_report_conversion:', error);
+      }
     }
   }, []);
 

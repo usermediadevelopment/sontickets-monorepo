@@ -72,36 +72,39 @@ export const Forms = () => {
     );
   }
 
+  // Get company Google Ads data if available, or use fallback values
+  const conversionId = company?.settings?.integrations?.googleAds?.conversionId || 'AW-437148397';
+  const conversionTag =
+    company?.settings?.integrations?.googleAds?.conversionTag || 'cP08COGm-LYaEO21udAB';
+
   return (
     <>
-      {company?.settings.integrations?.googleAds?.conversionId && (
+      {company && (
         <Helmet>
           {/* Google tag (gtag.js) */}
           <script
             async
-            src={`https://www.googletagmanager.com/gtag/js?id=${company?.settings.integrations?.googleAds?.conversionId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${conversionId}`}
           ></script>
           <script>
             {`
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${company?.settings.integrations?.googleAds?.conversionId}');
-    `}
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${conversionId}');
+          `}
           </script>
 
           {/* Event snippet for reservation conversion */}
           <script>
             {`
-    function gtag_report_conversion(url) {
-  
-      gtag('event', 'conversion', {
-        'send_to': '${company?.settings.integrations?.googleAds?.conversionId}/${company?.settings.integrations?.googleAds?.conversionTag}',
-       
-      });
-      return false;
-    }
-    window.gtag_report_conversion = gtag_report_conversion;
+          function gtag_report_conversion(url) {
+            gtag('event', 'conversion', {
+              'send_to': '${conversionId}/${conversionTag}',
+            });
+            return false;
+          }
+          window.gtag_report_conversion = gtag_report_conversion;
           `}
           </script>
         </Helmet>

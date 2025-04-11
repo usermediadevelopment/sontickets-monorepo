@@ -498,12 +498,6 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
         event: 'reservation-created',
       });
 
-      // Scroll to top of the form
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-
       setReservationCreated({
         id: reservationId,
         name: data.namesAndSurnames,
