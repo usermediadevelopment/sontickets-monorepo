@@ -299,7 +299,6 @@ const ReservationForm = () => {
             <Stack pl={10} spacing={4}>
               {!fieldSelected && <Heading size={'md'}>Crear nuevo campo</Heading>}
               {fieldSelected && <Heading size={'md'}>Actualizar - {fieldSelected.name.es}</Heading>}
-
               <FormControl isInvalid={handleIsInvalidField(errors.type?.message)}>
                 <FormLabel htmlFor='size'>Tipo*</FormLabel>
                 <Select
@@ -341,6 +340,7 @@ const ReservationForm = () => {
                 <FormErrorMessage>{errors.placeholderEn?.message}</FormErrorMessage>
               </FormControl>
             </SimpleGrid> */}
+              {fieldSelected && <Heading size={'sm'}>Slug: {fieldSelected.slug}</Heading>}
               {watchType === FormFieldType.SELECT && (
                 <SimpleGrid columns={2} spacingX='40px' spacingY='20px'>
                   <FormControl isInvalid={handleIsInvalidField(errors.options?.message)}>
@@ -401,7 +401,6 @@ const ReservationForm = () => {
                 <FormErrorMessage>{errors.defaultValueEn?.message}</FormErrorMessage>
               </FormControl>
             </SimpleGrid> */}
-
               <FormControl
                 display='flex'
                 alignItems='center'
@@ -413,7 +412,6 @@ const ReservationForm = () => {
                 <Switch id='required' isChecked={watchRequired} {...register('required')} />
                 <FormErrorMessage>{errors.required?.message}</FormErrorMessage>
               </FormControl>
-
               <FormControl
                 display='flex'
                 alignItems='center'
@@ -429,7 +427,6 @@ const ReservationForm = () => {
                 />
                 <FormErrorMessage>{errors.hasConfirmation?.message}</FormErrorMessage>
               </FormControl>
-
               <HStack mt={10} justifyContent={'center'}>
                 <Button isLoading={isSaving} type='submit' colorScheme='blue'>
                   Guardar
