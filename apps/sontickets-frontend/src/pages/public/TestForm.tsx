@@ -100,6 +100,11 @@ const TestForm = () => {
         justifyContent='center'
         height='100vh'
       >
+        <embed
+          width='100%'
+          height='100%'
+          src='http://localhost:5173/form/noi-remb?lang=es&from=mejoresrestaurantes.co&gclid=321321321312&namesAndSurnames=Diego+Blanco&companyName=Go+City+Events+S.A.S&address=cr+32d+9+17&identificationNumber=901224928&phoneNumber=3187828495&email=diego%40usermedia.co&alreadyAMemberOfNoi=Si'
+        />
         <VStack spacing={6} width='100%' maxW='500px' p={4}>
           <Text fontSize='2xl' fontWeight='bold'>
             Company Lookup

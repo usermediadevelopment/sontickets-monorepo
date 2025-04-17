@@ -71,7 +71,7 @@ const defaultSchema = (location: Location) => {
 
         const dayOfWeek = getDateStartOfDay(dateSelectedString).getDay();
 
-        var scheduleByDay;
+        let scheduleByDay;
         if (schedule) {
           scheduleByDay = schedule['weekly-dates'][homologateDay[dayOfWeek]];
         }

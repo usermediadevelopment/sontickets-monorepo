@@ -104,7 +104,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
   const [updateLocationStatus, setUpdateLocationStatus] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
   const { i18n } = useTranslation();
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { logError } = useErrorLogs();
   const {
     register,
@@ -130,9 +130,12 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
             identificationNumber: 1026282,
             phoneNumber: '3503429563',
             email: 'arangotorcar@gmail.com',
-            confirmEmail: 'arangotorcar@gmail.com',
+            emailConfirmation: 'arangotorcar@gmail.com',
           }
         : {}),
+
+      ...Object.fromEntries(searchParams.entries()),
+      emailConfirmation: searchParams.get('email'),
     },
   });
 

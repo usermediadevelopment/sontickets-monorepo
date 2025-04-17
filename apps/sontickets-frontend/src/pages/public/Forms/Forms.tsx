@@ -18,7 +18,7 @@ export const Forms = () => {
   const gclidParam = useGetParam('gclid');
 
   const [company, setCompany] = useState<Company>();
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Function to get cookie value
   const getCookie = (name: string): string | null => {
@@ -51,6 +51,7 @@ export const Forms = () => {
           ...(from ? { from } : {}),
           ...(lang ? { lang } : {}),
           ...(gclid ? { gclid } : {}),
+          ...Object.fromEntries(searchParams.entries()),
         });
       }
       setIsLoading(false);
