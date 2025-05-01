@@ -133,9 +133,8 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
             emailConfirmation: 'arangotorcar@gmail.com',
           }
         : {}),
-
       ...Object.fromEntries(searchParams.entries()),
-      emailConfirmation: searchParams.get('email'),
+      emailConfirmation: searchParams.get('email')  ?? isDev ? 'arangotorcar@gmail.com' : '',
     },
   });
 
