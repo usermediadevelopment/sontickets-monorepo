@@ -20,7 +20,6 @@ const CalendarPicker = ({ onChange }: DateRangeCompProps) => {
   return (
     <VStack spacing={2} justifyContent='flex-start' alignItems={'flex-start'}>
       <Heading fontSize={'large'}>Fecha</Heading>
-      {/* @ts-expect-error - Calendar component type incompatibility */}
       <Calendar
         locale={esLocale}
         date={date}

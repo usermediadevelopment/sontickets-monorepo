@@ -212,7 +212,7 @@ const SpecialDates = ({ locationUuid = '' }: { locationUuid: string }) => {
         gap={10}
       >
         <Box>
-          {/* @ts-expect-error - Calendar component type incompatibility */}
+       
           <Calendar
             date={date}
             minDate={new Date()}
