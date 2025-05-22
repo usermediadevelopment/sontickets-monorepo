@@ -21,7 +21,12 @@ import { LocationModel } from '../../schedule/data/models/location_model';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import firebaseFirestore from '~/config/firebase/firestore';
 
-const ScheduleSettings = ({ locationUuid = '' }) => {
+interface ScheduleSettingsProps {
+  locationUuid?: string;
+  isDisabled?: boolean;
+}
+
+const ScheduleSettings = ({ locationUuid = '', isDisabled = true }: ScheduleSettingsProps) => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isEndDateEnable, setIsEndDateEnable] = useState<boolean>(false);
   const [numberBookings, setNumberBookings] = useState<number>(1);
@@ -104,8 +109,8 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
         }}
         gap={10}
       >
-        <Flex pt={4} flexDirection={'column'} gap={10}>
-          <FormControl>
+        <Flex pt={4} flexDirection={'column'} gap={10} >
+          <FormControl isDisabled={isDisabled}>
             <FormLabel htmlFor='maximumCapacity'>
               ¿Cuál es la capacidad máxima de personas en este espacio?
             </FormLabel>
@@ -114,6 +119,7 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
               onChange={(e) => setMaximumCapacity(+e)}
               min={0}
               max={100}
+              isDisabled={isDisabled}
             >
               <NumberInputField />
               <NumberInputStepper>
@@ -129,10 +135,11 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
               setIsEndDateEnable(e.target.checked);
             }}
             isChecked={isEndDateEnable}
+            isDisabled={isDisabled}
           >
             Deseas que el usuario pueda definir la fecha de finalización de la reserva?
           </Checkbox>
-          <FormControl>
+          <FormControl isDisabled={isDisabled}>
             <FormLabel htmlFor='numberPeople'>
               Cuantas reservas se pueden generar en este mismo bloque?
             </FormLabel>
@@ -141,6 +148,7 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
               onChange={(e) => setNumberBookings(+e)}
               min={0}
               max={100}
+              isDisabled={isDisabled}
             >
               <NumberInputField />
               <NumberInputStepper>
@@ -150,7 +158,7 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
             </NumberInput>
           </FormControl>
 
-          <FormControl>
+          <FormControl isDisabled={isDisabled}>
             <FormLabel htmlFor='blockTime'>¿Cuál es el tiempo del bloque?</FormLabel>
             <Select
               placeholder='Seleccione el tiempo'
@@ -158,6 +166,7 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
               onChange={(e) => {
                 setBlockTimeMinutes(+e.target.value);
               }}
+              isDisabled={isDisabled}
             >
               <option key={'0'} value={0}>
                 Sin tiempo de bloque
@@ -177,6 +186,7 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
                 setPersonHasSpecificPosition(e.target.checked);
               }}
               isChecked={personHasSpecificPosition}
+              isDisabled={isDisabled}
             >
               ¿Cada persona tiene asignado un puesto específico?
             </Checkbox>
@@ -187,6 +197,7 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
               setIsReservationWholeDay(e.target.checked);
             }}
             isChecked={isReservationWholeDay}
+            isDisabled={isDisabled}
           >
             ¿La reserva es para todo el dia ?
           </Checkbox>
@@ -200,6 +211,7 @@ const ScheduleSettings = ({ locationUuid = '' }) => {
               }}
               colorScheme='blue'
               mr={3}
+              isDisabled={isDisabled}
             >
               Guardar
             </Button>
