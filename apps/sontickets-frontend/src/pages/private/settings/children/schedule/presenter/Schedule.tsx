@@ -19,7 +19,13 @@ export enum Status {
   active = 'active',
   inactive = 'inactive',
 }
-const Schedule = ({ locationUuid = '' }: { locationUuid: string }) => {
+
+interface ScheduleProps {
+  locationUuid: string;
+  isDisabled?: boolean;
+}
+
+const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
   const [hours, _] = useState<Hour[]>(getHoursWithMiddle());
   const [isSaving, setIsSaving] = useState<boolean>();
   const [location, setLocation] = useState<Location>();
@@ -113,7 +119,7 @@ const Schedule = ({ locationUuid = '' }: { locationUuid: string }) => {
     <TabPanel>
       <Flex justifyContent={'flex-start'} alignItems='flex-start' gap={20}>
         <Flex flexDirection={'column'}>
-          <FormControl display='flex' alignItems='center'>
+          <FormControl display='flex' alignItems='center' isDisabled={isDisabled}>
             <FormLabel htmlFor='email-alerts' mb='0'>
               ¿Disponible?
             </FormLabel>
@@ -121,16 +127,17 @@ const Schedule = ({ locationUuid = '' }: { locationUuid: string }) => {
               id='status'
               isChecked={status == Status.active}
               onChange={(value) => _onChangeDisponibility(value.target.checked)}
+              isDisabled={isDisabled}
             />
           </FormControl>
           {daysWithIndex.map((day) => {
             return (
               <Flex key={day.value} gap={10} alignItems={'center'}>
-                <Text w={150} as='b'>
+                <Text w={150} as='b' color={isDisabled ? 'gray.500' : 'black'}>
                   {day.label}
                 </Text>
                 <Select
-                  disabled={isSaving}
+                  disabled={isSaving || isDisabled}
                   key={'opening' + day.value}
                   ref={(el) => (selectOpeningRef.current[day.value] = el)}
                   w={150}
@@ -139,14 +146,14 @@ const Schedule = ({ locationUuid = '' }: { locationUuid: string }) => {
                 >
                   {hours.map((hour) => {
                     return (
-                      <option key={day.value + '' + hour.value} value={hour.value}>
+                      <option key={day.value + '' + hour.value} value={hour.value} disabled={isDisabled}>
                         {hour.label}
                       </option>
                     );
                   })}
                 </Select>
                 <Select
-                  disabled={isSaving}
+                  disabled={isSaving || isDisabled}
                   key={'closing' + day.value}
                   ref={(el) => (selectClosingRef.current[day.value] = el)}
                   w={100}
@@ -172,6 +179,7 @@ const Schedule = ({ locationUuid = '' }: { locationUuid: string }) => {
               mt={10}
               size='sm'
               colorScheme='blue'
+              isDisabled={isDisabled}
             >
               Guardar
             </Button>
