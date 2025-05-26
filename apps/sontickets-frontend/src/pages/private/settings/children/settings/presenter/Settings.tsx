@@ -20,13 +20,25 @@ import { LocationModel } from '../../schedule/data/models/location_model';
 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import firebaseFirestore from '~/config/firebase/firestore';
+import { useActivityLogs } from '~/hooks/useActivityLogs';
+import { useAuth } from '~/hooks/useAuth';
 
 interface ScheduleSettingsProps {
   locationUuid?: string;
   isDisabled?: boolean;
 }
 
-const ScheduleSettings = ({ locationUuid = '', isDisabled = true }: ScheduleSettingsProps) => {
+// Interface for tracking settings
+interface LocationSettings {
+  isEndDateEnable: boolean;
+  numberBookingsAllow: number;
+  personHasSpecificPosition: boolean;
+  isReservationWholeDay: boolean;
+  maximumCapacity: number;
+  blockTimeMinutes: number;
+}
+
+const ScheduleSettings = ({ locationUuid = '', isDisabled = false }: ScheduleSettingsProps) => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isEndDateEnable, setIsEndDateEnable] = useState<boolean>(false);
   const [numberBookings, setNumberBookings] = useState<number>(1);
@@ -34,6 +46,91 @@ const ScheduleSettings = ({ locationUuid = '', isDisabled = true }: ScheduleSett
   const [isReservationWholeDay, setIsReservationWholeDay] = useState<boolean>();
   const [maximumCapacity, setMaximumCapacity] = useState<number>(0);
   const [blockTimeMinutes, setBlockTimeMinutes] = useState<number>(0);
+  const [originalSettings, setOriginalSettings] = useState<LocationSettings | null>(null);
+  const { logActivity } = useActivityLogs();
+  const { user } = useAuth();
+  const [locationName, setLocationName] = useState<string>('');
+
+  // Get modified settings compared to original
+  const getModifiedSettings = () => {
+    if (!originalSettings) return { count: 0, changes: [] };
+
+    const currentSettings: LocationSettings = {
+      isEndDateEnable,
+      numberBookingsAllow: numberBookings,
+      personHasSpecificPosition: personHasSpecificPosition || false,
+      isReservationWholeDay: isReservationWholeDay || false,
+      maximumCapacity,
+      blockTimeMinutes,
+    };
+
+    const changes: {
+      setting: string;
+      displayName: string;
+      previousValue: any;
+      newValue: any;
+    }[] = [];
+
+    // Compare each setting
+    if (originalSettings.isEndDateEnable !== currentSettings.isEndDateEnable) {
+      changes.push({
+        setting: 'isEndDateEnable',
+        displayName: 'Fecha de finalización',
+        previousValue: originalSettings.isEndDateEnable,
+        newValue: currentSettings.isEndDateEnable,
+      });
+    }
+
+    if (originalSettings.numberBookingsAllow !== currentSettings.numberBookingsAllow) {
+      changes.push({
+        setting: 'numberBookingsAllow',
+        displayName: 'Número de reservas por bloque',
+        previousValue: originalSettings.numberBookingsAllow,
+        newValue: currentSettings.numberBookingsAllow,
+      });
+    }
+
+    if (originalSettings.personHasSpecificPosition !== currentSettings.personHasSpecificPosition) {
+      changes.push({
+        setting: 'personHasSpecificPosition',
+        displayName: 'Puesto específico asignado',
+        previousValue: originalSettings.personHasSpecificPosition,
+        newValue: currentSettings.personHasSpecificPosition,
+      });
+    }
+
+    if (originalSettings.isReservationWholeDay !== currentSettings.isReservationWholeDay) {
+      changes.push({
+        setting: 'isReservationWholeDay',
+        displayName: 'Reserva para todo el día',
+        previousValue: originalSettings.isReservationWholeDay,
+        newValue: currentSettings.isReservationWholeDay,
+      });
+    }
+
+    if (originalSettings.maximumCapacity !== currentSettings.maximumCapacity) {
+      changes.push({
+        setting: 'maximumCapacity',
+        displayName: 'Capacidad máxima',
+        previousValue: originalSettings.maximumCapacity,
+        newValue: currentSettings.maximumCapacity,
+      });
+    }
+
+    if (originalSettings.blockTimeMinutes !== currentSettings.blockTimeMinutes) {
+      changes.push({
+        setting: 'blockTimeMinutes',
+        displayName: 'Tiempo de bloque',
+        previousValue: originalSettings.blockTimeMinutes,
+        newValue: currentSettings.blockTimeMinutes,
+      });
+    }
+
+    return {
+      count: changes.length,
+      changes,
+    };
+  };
 
   const onSubmit = async () => {
     setIsSaving(true);
@@ -41,6 +138,15 @@ const ScheduleSettings = ({ locationUuid = '', isDisabled = true }: ScheduleSett
     try {
       const locationRef = doc(firebaseFirestore, 'locations', locationUuid);
 
+      // Get modified settings
+      const modifiedInfo = getModifiedSettings();
+
+      if (modifiedInfo.count === 0) {
+        setIsSaving(false);
+        return; // Nothing changed
+      }
+
+      // Save to Firebase
       await setDoc(
         locationRef,
         {
@@ -57,7 +163,36 @@ const ScheduleSettings = ({ locationUuid = '', isDisabled = true }: ScheduleSett
         },
         { merge: true }
       );
+
+      // Log each changed setting
+      for (const change of modifiedInfo.changes) {
+        await logActivity({
+          activityType: 'settings_update',
+          entityId: locationUuid,
+          entityType: 'location',
+
+          details: {
+            setting: change.setting,
+            settingDisplayName: change.displayName,
+            previousValue: change.previousValue,
+            newValue: change.newValue,
+            locationName,
+            updatedBy: user?.email || '',
+          },
+        });
+      }
+
+      // Update original settings
+      setOriginalSettings({
+        isEndDateEnable,
+        numberBookingsAllow: numberBookings,
+        personHasSpecificPosition: personHasSpecificPosition || false,
+        isReservationWholeDay: isReservationWholeDay || false,
+        maximumCapacity,
+        blockTimeMinutes,
+      });
     } catch (error) {
+      console.error('Error saving settings:', error);
     } finally {
       setIsSaving(false);
     }
@@ -78,6 +213,10 @@ const ScheduleSettings = ({ locationUuid = '', isDisabled = true }: ScheduleSett
     let maximumCapacity = 0;
     let blockTimeMinutes = 0;
     const location = docSnap.data() as LocationModel;
+
+    // Store location name for activity logs
+    setLocationName(location.name || '');
+
     if (location?.schedule?.settings) {
       isEndDateEnable = location?.schedule.settings.isEndDateEnable ?? false;
       numberBookingsAllow = location?.schedule.settings?.numberBookingsAllow ?? 1;
@@ -93,6 +232,16 @@ const ScheduleSettings = ({ locationUuid = '', isDisabled = true }: ScheduleSett
     setIsReservationWholeDay(isReservationWholeDay);
     setMaximumCapacity(maximumCapacity);
     setBlockTimeMinutes(blockTimeMinutes);
+
+    // Store original settings for comparison
+    setOriginalSettings({
+      isEndDateEnable,
+      numberBookingsAllow,
+      personHasSpecificPosition,
+      isReservationWholeDay,
+      maximumCapacity,
+      blockTimeMinutes,
+    });
   };
 
   useEffect(() => {
@@ -109,7 +258,7 @@ const ScheduleSettings = ({ locationUuid = '', isDisabled = true }: ScheduleSett
         }}
         gap={10}
       >
-        <Flex pt={4} flexDirection={'column'} gap={10} >
+        <Flex pt={4} flexDirection={'column'} gap={10}>
           <FormControl isDisabled={isDisabled}>
             <FormLabel htmlFor='maximumCapacity'>
               ¿Cuál es la capacidad máxima de personas en este espacio?
