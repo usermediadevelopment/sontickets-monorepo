@@ -27,10 +27,11 @@ interface ScheduleProps {
   isDisabled?: boolean;
 }
 
-const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
+const Schedule = ({ locationUuid = '', isDisabled = false }: ScheduleProps) => {
   const [hours, _] = useState<Hour[]>(getHoursWithMiddle());
   const [isSaving, setIsSaving] = useState<boolean>();
   const [location, setLocation] = useState<Location>();
+  const [originalSchedule, setOriginalSchedule] = useState<WeeklyDates | null>(null);
   const scheduleRepository = useRef<ScheduleRepositoryImpl>(new ScheduleRepositoryImpl());
   const selectOpeningRef = useRef<HTMLSelectElement[] | any>([]);
   const selectClosingRef = useRef<HTMLSelectElement[] | any>([]);
@@ -44,6 +45,57 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
     });
 
     setLocation(location as Location);
+
+    // Store the original schedule when we first load it
+    if (location?.schedule?.['weekly-dates']) {
+      setOriginalSchedule(location.schedule['weekly-dates']);
+    }
+  };
+
+  // Determines which days have been modified compared to the original schedule
+  const getModifiedDays = (newSchedule: WeeklyDates) => {
+    if (!originalSchedule) return { count: 0, days: [] };
+
+    const modifiedDays: {
+      index: number;
+      dayName: string;
+      previousValues: { opening?: string; closing?: string };
+      newValues: { opening?: string; closing?: string };
+    }[] = [];
+
+    for (let index = 0; index < 7; index++) {
+      const original = originalSchedule[index];
+      const updated = newSchedule[index];
+      const changes: string[] = [];
+      const previousValues: { opening?: string; closing?: string } = {};
+      const newValues: { opening?: string; closing?: string } = {};
+
+      if (original?.opening !== updated.opening) {
+        previousValues.opening = original?.opening;
+        newValues.opening = updated.opening;
+      }
+
+      if (original?.closing !== updated.closing) {
+        previousValues.closing = original?.closing;
+        newValues.closing = updated.closing;
+      }
+
+      if (changes.length > 0) {
+        const dayName = daysWithIndex.find((day) => day.value === index)?.label || `Day ${index}`;
+        modifiedDays.push({
+          index,
+          dayName,
+
+          previousValues,
+          newValues,
+        });
+      }
+    }
+
+    return {
+      count: modifiedDays.length,
+      days: modifiedDays,
+    };
   };
 
   const _onClickSave = async () => {
@@ -57,11 +109,14 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
       };
     }
 
+    // Get information about which days were modified
+    const modifiedInfo = getModifiedDays(weeklyDates);
+
     await scheduleRepository.current.setWeeklyDates({
       locationUuid: locationUuid,
       ['weekly-dates']: weeklyDates,
     });
-    
+
     // Log the open hours update activity
     await logActivity({
       activityType: 'open_hours_update',
@@ -70,10 +125,14 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
       details: {
         weeklyDates,
         locationName: location?.name || '',
-        updatedBy: user?.email || ''
-      }
+        updatedBy: user?.email || '',
+        modifiedDaysCount: modifiedInfo.count,
+        modifiedDays: modifiedInfo.days,
+      },
     });
-    
+
+    // Update the original schedule after saving
+    setOriginalSchedule(weeklyDates);
     setIsSaving(false);
   };
 
@@ -81,7 +140,7 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
     const statusChecked = checked ? Status.active : Status.inactive;
     setStatus(statusChecked);
     await scheduleRepository.current.setStatus(statusChecked, locationUuid);
-    
+
     // Log the status change activity
     await logActivity({
       activityType: 'settings_update',
@@ -92,8 +151,8 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
         previousValue: status,
         newValue: statusChecked,
         locationName: location?.name || '',
-        updatedBy: user?.email || ''
-      }
+        updatedBy: user?.email || '',
+      },
     });
   };
 
@@ -177,7 +236,11 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
                 >
                   {hours.map((hour) => {
                     return (
-                      <option key={day.value + '' + hour.value} value={hour.value} disabled={isDisabled}>
+                      <option
+                        key={day.value + '' + hour.value}
+                        value={hour.value}
+                        disabled={isDisabled}
+                      >
                         {hour.label}
                       </option>
                     );
