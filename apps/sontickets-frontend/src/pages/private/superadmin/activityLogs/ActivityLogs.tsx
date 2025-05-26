@@ -28,12 +28,26 @@ import {
   IconButton,
   Stack,
   Divider,
+  ButtonGroup,
 } from '@chakra-ui/react';
-import { collection, getDocs, orderBy, query, where, Timestamp } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  where,
+  Timestamp,
+  limit,
+  startAfter,
+  endBefore,
+  QueryDocumentSnapshot,
+  DocumentData,
+  QueryConstraint,
+} from 'firebase/firestore';
 import firebaseFirestore from '~/config/firebase/firestore';
 import { format } from 'date-fns';
 import { ActivityType } from '~/hooks/useActivityLogs';
-import { InfoOutlineIcon, ViewIcon } from '@chakra-ui/icons';
+import { InfoOutlineIcon, ViewIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
 
 type ActivityLog = {
   id: string;
@@ -80,8 +94,6 @@ const activityTypeLabels: Record<ActivityType, string> = {
 };
 
 const ActivityLogs: React.FC<ActivityLogsProps> = () => {
-  const [activities, setActivities] = useState<ActivityLog[]>([]);
-  const [filteredActivities, setFilteredActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<string>('all');
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -91,6 +103,18 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [endDateFilter, setEndDateFilter] = useState<string>('');
+
+  // Pagination state for server-side pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20); // Back to 25 for production
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [pageSnapshots, setPageSnapshots] = useState<
+    Map<number, QueryDocumentSnapshot<DocumentData> | null>
+  >(new Map());
+  const [currentActivities, setCurrentActivities] = useState<ActivityLog[]>([]);
+  const [filteredActivities, setFilteredActivities] = useState<ActivityLog[]>([]);
 
   // Fetch companies
   useEffect(() => {
@@ -120,13 +144,56 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
     fetchCompanies();
   }, []);
 
-  const fetchActivities = async () => {
+  const fetchActivities = async (
+    pageNumber: number = 1,
+    direction: 'next' | 'prev' | 'first' = 'first'
+  ) => {
     if (!selectedCompanyId) return;
 
     setLoading(true);
     try {
       const activitiesRef = collection(firebaseFirestore, 'activity_logs');
-      let constraints = [where('companyId', '==', selectedCompanyId), orderBy('timestamp', 'desc')];
+      let constraints: QueryConstraint[] = [
+        where('companyId', '==', selectedCompanyId),
+        orderBy('timestamp', 'desc'),
+        limit(itemsPerPage + 1), // Get one extra to check if there's a next page
+      ];
+
+      // Add activity type filters at the Firestore query level
+      if (filter !== 'all') {
+        if (filter === 'transactions') {
+          constraints.push(
+            where('activityType', 'in', ['transaction_payment', 'transaction_refund'])
+          );
+        } else if (filter === 'reservations') {
+          constraints.push(
+            where('activityType', 'in', [
+              'reservation_create',
+              'reservation_modify',
+              'reservation_delete',
+            ])
+          );
+        } else if (filter === 'settings') {
+          constraints.push(
+            where('activityType', 'in', [
+              'settings_update',
+              'email_template_edit',
+              'form_field_add',
+              'form_field_edit',
+              'form_field_delete',
+            ])
+          );
+        } else if (filter === 'schedule') {
+          constraints.push(
+            where('activityType', 'in', [
+              'open_hours_update',
+              'block_dates_add',
+              'block_dates_edit',
+              'block_dates_delete',
+            ])
+          );
+        }
+      }
 
       // Add date range filters if provided
       if (startDateFilter && endDateFilter) {
@@ -142,21 +209,107 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
         );
       }
 
+      // Handle pagination cursors
+      if (direction === 'next' && pageNumber > 1) {
+        const lastDocSnapshot = pageSnapshots.get(pageNumber - 1);
+        if (lastDocSnapshot) {
+          constraints.push(startAfter(lastDocSnapshot));
+        }
+      } else if (direction === 'prev' && pageNumber > 1) {
+        const firstDocSnapshot = pageSnapshots.get(pageNumber + 1);
+        if (firstDocSnapshot) {
+          constraints.push(endBefore(firstDocSnapshot));
+        }
+      }
+
       const q = query(activitiesRef, ...constraints);
       const querySnapshot = await getDocs(q);
 
-      console.log(querySnapshot.docs);
+      const docs = querySnapshot.docs;
+      const hasMore = docs.length > itemsPerPage;
+      const actualDocs = hasMore ? docs.slice(0, itemsPerPage) : docs;
 
-      const activityData: ActivityLog[] = [];
-      querySnapshot.forEach((doc) => {
-        activityData.push({
-          id: doc.id,
-          ...doc.data(),
-        } as ActivityLog);
-      });
+      // Store the last document for next page navigation
+      if (actualDocs.length > 0) {
+        const newSnapshots = new Map(pageSnapshots);
+        newSnapshots.set(pageNumber, actualDocs[actualDocs.length - 1]);
+        setPageSnapshots(newSnapshots);
+      }
 
-      setActivities(activityData);
-      setFilteredActivities(activityData);
+      const activityData: ActivityLog[] = actualDocs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          } as ActivityLog)
+      );
+
+      // For the first page, also get total count (this is expensive, so only do it once)
+      if (pageNumber === 1) {
+        const countConstraints: QueryConstraint[] = [
+          where('companyId', '==', selectedCompanyId),
+          orderBy('timestamp', 'desc'),
+        ];
+
+        // Add the same activity type filter for count
+        if (filter !== 'all') {
+          if (filter === 'transactions') {
+            countConstraints.push(
+              where('activityType', 'in', ['transaction_payment', 'transaction_refund'])
+            );
+          } else if (filter === 'reservations') {
+            countConstraints.push(
+              where('activityType', 'in', [
+                'reservation_create',
+                'reservation_modify',
+                'reservation_delete',
+              ])
+            );
+          } else if (filter === 'settings') {
+            countConstraints.push(
+              where('activityType', 'in', [
+                'settings_update',
+                'email_template_edit',
+                'form_field_add',
+                'form_field_edit',
+                'form_field_delete',
+              ])
+            );
+          } else if (filter === 'schedule') {
+            countConstraints.push(
+              where('activityType', 'in', [
+                'open_hours_update',
+                'block_dates_add',
+                'block_dates_edit',
+                'block_dates_delete',
+              ])
+            );
+          }
+        }
+
+        if (startDateFilter && endDateFilter) {
+          const startDate = new Date(startDateFilter);
+          startDate.setHours(0, 0, 0, 0);
+
+          const endDate = new Date(endDateFilter);
+          endDate.setHours(23, 59, 59, 999);
+
+          countConstraints.push(
+            where('timestamp', '>=', Timestamp.fromDate(startDate)),
+            where('timestamp', '<=', Timestamp.fromDate(endDate))
+          );
+        }
+
+        const countQuery = query(activitiesRef, ...countConstraints);
+        const countSnapshot = await getDocs(countQuery);
+        setTotalCount(countSnapshot.size);
+      }
+
+      setCurrentActivities(activityData);
+      setFilteredActivities(activityData); // Since filtering is now done at query level
+      setHasNextPage(hasMore);
+      setHasPrevPage(pageNumber > 1);
+      setCurrentPage(pageNumber);
     } catch (error) {
       console.error('Error fetching activity logs:', error);
     } finally {
@@ -164,57 +317,32 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
     }
   };
 
+  // Fetch data when company or filter changes
   useEffect(() => {
     if (selectedCompanyId) {
-      fetchActivities();
+      setCurrentPage(1);
+      setPageSnapshots(new Map());
+      fetchActivities(1, 'first');
     }
-  }, [selectedCompanyId]);
+  }, [filter, selectedCompanyId]);
 
   const handleApplyFilters = () => {
-    fetchActivities();
+    setCurrentPage(1);
+    setPageSnapshots(new Map());
+    fetchActivities(1, 'first');
   };
 
-  useEffect(() => {
-    if (filter === 'all') {
-      setFilteredActivities(activities);
-    } else if (filter === 'transactions') {
-      setFilteredActivities(
-        activities.filter(
-          (a) => a.activityType === 'transaction_payment' || a.activityType === 'transaction_refund'
-        )
-      );
-    } else if (filter === 'reservations') {
-      setFilteredActivities(
-        activities.filter(
-          (a) =>
-            a.activityType === 'reservation_create' ||
-            a.activityType === 'reservation_modify' ||
-            a.activityType === 'reservation_delete'
-        )
-      );
-    } else if (filter === 'settings') {
-      setFilteredActivities(
-        activities.filter(
-          (a) =>
-            a.activityType === 'settings_update' ||
-            a.activityType === 'email_template_edit' ||
-            a.activityType === 'form_field_add' ||
-            a.activityType === 'form_field_edit' ||
-            a.activityType === 'form_field_delete'
-        )
-      );
-    } else if (filter === 'schedule') {
-      setFilteredActivities(
-        activities.filter(
-          (a) =>
-            a.activityType === 'open_hours_update' ||
-            a.activityType === 'block_dates_add' ||
-            a.activityType === 'block_dates_edit' ||
-            a.activityType === 'block_dates_delete'
-        )
-      );
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      fetchActivities(currentPage - 1, 'prev');
     }
-  }, [filter, activities]);
+  };
+
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      fetchActivities(currentPage + 1, 'next');
+    }
+  };
 
   const formatDate = (timestamp: Timestamp) => {
     if (!timestamp) return 'N/A';
@@ -969,7 +1097,15 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
 
       <Flex gap={4} align='center' mb={4}>
         <Text fontWeight='medium'>
-          {filteredActivities.length} {filteredActivities.length === 1 ? 'record' : 'records'} found
+          {totalCount > 0
+            ? `${totalCount} records found`
+            : `${filteredActivities.length} records found`}
+          {totalCount > itemsPerPage && (
+            <Text as='span' color='gray.600' fontWeight='normal'>
+              {' '}
+              (showing {itemsPerPage} per page)
+            </Text>
+          )}
         </Text>
         <HStack>
           <Select
@@ -979,7 +1115,6 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
             width='200px'
           >
             <option value='all'>All Activities</option>
-
             <option value='reservations'>Reservations</option>
             <option value='settings'>Settings & Forms</option>
             <option value='schedule'>Schedule & Dates</option>
@@ -994,83 +1129,128 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
       ) : filteredActivities.length === 0 ? (
         <Text>No activity logs found for the selected filters.</Text>
       ) : (
-        <Box overflowX='auto'>
-          <Table variant='simple' size='sm'>
-            <Thead>
-              <Tr>
-                <Th>Date</Th>
-                <Th>Activity</Th>
-                <Th>User</Th>
-                <Th>Entity</Th>
-                <Th>Context</Th>
-                <Th>Details</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filteredActivities.map((activity) => (
-                <Tr key={activity.id}>
-                  <Td>{formatDate(activity.timestamp)}</Td>
-                  <Td>
-                    <Badge colorScheme={getBadgeColor(activity.activityType)}>
-                      {activityTypeLabels[activity.activityType] || activity.activityType}
-                    </Badge>
-                    {activity.amount && (
-                      <Text fontSize='xs' mt={1}>
-                        ${activity.amount} - {activity.paymentMethod}
-                      </Text>
-                    )}
-                  </Td>
-                  <Td>{activity.userEmail || 'Anonymous'}</Td>
-                  <Td>{activity.entityType || 'N/A'}</Td>
-                  <Td>
-                    {getContextInfo(activity) ? (
-                      <Text fontSize='sm' fontFamily='mono'>
-                        {getContextInfo(activity)}
-                      </Text>
-                    ) : (
-                      <Text fontSize='xs' color='gray.500'>
-                        -
-                      </Text>
-                    )}
-                  </Td>
-                  <Td>
-                    {activity.details ? (
-                      <Popover placement='left' isLazy>
-                        <PopoverTrigger>
-                          <IconButton
-                            aria-label='View details'
-                            icon={<ViewIcon />}
-                            size='xs'
-                            variant='outline'
-                          />
-                        </PopoverTrigger>
-                        <PopoverContent width='auto' maxWidth='400px'>
-                          <PopoverArrow />
-                          <PopoverCloseButton />
-                          <PopoverBody p={4}>
-                            <Heading size='xs' mb={2}>
-                              {activity.entityType ? `${activity.entityType} Details` : 'Details'}
-                              {activity.entityId && (
-                                <Tooltip label={activity.entityId} placement='top'>
-                                  <InfoOutlineIcon ml={1} boxSize={3} />
-                                </Tooltip>
-                              )}
-                            </Heading>
-                            {formatDetails(activity)}
-                          </PopoverBody>
-                        </PopoverContent>
-                      </Popover>
-                    ) : (
-                      <Text fontSize='xs' color='gray.500'>
-                        No details
-                      </Text>
-                    )}
-                  </Td>
+        <>
+          <Box overflowX='auto'>
+            <Table variant='simple' size='sm'>
+              <Thead>
+                <Tr>
+                  <Th>Date</Th>
+                  <Th>Activity</Th>
+                  <Th>User</Th>
+                  <Th>Entity</Th>
+                  <Th>Context</Th>
+                  <Th>Details</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </Box>
+              </Thead>
+              <Tbody>
+                {currentActivities.map((activity) => (
+                  <Tr key={activity.id}>
+                    <Td>{formatDate(activity.timestamp)}</Td>
+                    <Td>
+                      <Badge colorScheme={getBadgeColor(activity.activityType)}>
+                        {activityTypeLabels[activity.activityType] || activity.activityType}
+                      </Badge>
+                      {activity.amount && (
+                        <Text fontSize='xs' mt={1}>
+                          ${activity.amount} - {activity.paymentMethod}
+                        </Text>
+                      )}
+                    </Td>
+                    <Td>{activity.userEmail || 'Anonymous'}</Td>
+                    <Td>{activity.entityType || 'N/A'}</Td>
+                    <Td>
+                      {getContextInfo(activity) ? (
+                        <Text fontSize='sm' fontFamily='mono'>
+                          {getContextInfo(activity)}
+                        </Text>
+                      ) : (
+                        <Text fontSize='xs' color='gray.500'>
+                          -
+                        </Text>
+                      )}
+                    </Td>
+                    <Td>
+                      {activity.details ? (
+                        <Popover placement='left' isLazy>
+                          <PopoverTrigger>
+                            <IconButton
+                              aria-label='View details'
+                              icon={<ViewIcon />}
+                              size='xs'
+                              variant='outline'
+                            />
+                          </PopoverTrigger>
+                          <PopoverContent width='auto' maxWidth='400px'>
+                            <PopoverArrow />
+                            <PopoverCloseButton />
+                            <PopoverBody p={4}>
+                              <Heading size='xs' mb={2}>
+                                {activity.entityType ? `${activity.entityType} Details` : 'Details'}
+                                {activity.entityId && (
+                                  <Tooltip label={activity.entityId} placement='top'>
+                                    <InfoOutlineIcon ml={1} boxSize={3} />
+                                  </Tooltip>
+                                )}
+                              </Heading>
+                              {formatDetails(activity)}
+                            </PopoverBody>
+                          </PopoverContent>
+                        </Popover>
+                      ) : (
+                        <Text fontSize='xs' color='gray.500'>
+                          No details
+                        </Text>
+                      )}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
+
+          {/* Pagination Controls */}
+          {(totalCount > itemsPerPage || hasNextPage || hasPrevPage) && (
+            <Flex
+              justify='space-between'
+              align='center'
+              mt={4}
+              p={4}
+              bg='gray.50'
+              borderRadius='md'
+            >
+              <Text fontSize='sm' color='gray.600'>
+                Showing{' '}
+                {Math.min(
+                  (currentPage - 1) * itemsPerPage + 1,
+                  totalCount || filteredActivities.length
+                )}{' '}
+                to {Math.min(currentPage * itemsPerPage, totalCount || filteredActivities.length)}{' '}
+                of {totalCount || filteredActivities.length} results
+              </Text>
+
+              <ButtonGroup size='sm' isAttached variant='outline'>
+                <IconButton
+                  aria-label='Previous page'
+                  icon={<ChevronLeftIcon />}
+                  onClick={handlePreviousPage}
+                  isDisabled={!hasPrevPage}
+                />
+
+                {/* Page numbers - simplified for server-side pagination */}
+                <Button colorScheme='blue' variant='solid'>
+                  {currentPage}
+                </Button>
+
+                <IconButton
+                  aria-label='Next page'
+                  icon={<ChevronRightIcon />}
+                  onClick={handleNextPage}
+                  isDisabled={!hasNextPage}
+                />
+              </ButtonGroup>
+            </Flex>
+          )}
+        </>
       )}
     </Box>
   );
