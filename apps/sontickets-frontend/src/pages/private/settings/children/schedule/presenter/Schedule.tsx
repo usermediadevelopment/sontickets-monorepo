@@ -14,6 +14,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Hour, Location, WeeklyDates } from '~/core/types';
 import { daysWithIndex, getHoursWithMiddle } from '~/utils/date';
 import { ScheduleRepositoryImpl } from '../data/repositories/scheduleRepositoryImpl';
+import { useActivityLogs } from '~/hooks/useActivityLogs';
+import { useAuth } from '~/hooks/useAuth';
 
 export enum Status {
   active = 'active',
@@ -33,6 +35,8 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
   const selectOpeningRef = useRef<HTMLSelectElement[] | any>([]);
   const selectClosingRef = useRef<HTMLSelectElement[] | any>([]);
   const [status, setStatus] = useState<Status>(Status.inactive);
+  const { logActivity } = useActivityLogs();
+  const { user } = useAuth();
 
   const getLocation = async () => {
     const location = await scheduleRepository.current.getLocation({
@@ -57,6 +61,19 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
       locationUuid: locationUuid,
       ['weekly-dates']: weeklyDates,
     });
+    
+    // Log the open hours update activity
+    await logActivity({
+      activityType: 'open_hours_update',
+      entityId: locationUuid,
+      entityType: 'location',
+      details: {
+        weeklyDates,
+        locationName: location?.name || '',
+        updatedBy: user?.email || ''
+      }
+    });
+    
     setIsSaving(false);
   };
 
@@ -64,6 +81,20 @@ const Schedule = ({ locationUuid = '', isDisabled = true }: ScheduleProps) => {
     const statusChecked = checked ? Status.active : Status.inactive;
     setStatus(statusChecked);
     await scheduleRepository.current.setStatus(statusChecked, locationUuid);
+    
+    // Log the status change activity
+    await logActivity({
+      activityType: 'settings_update',
+      entityId: locationUuid,
+      entityType: 'location',
+      details: {
+        setting: 'availability_status',
+        previousValue: status,
+        newValue: statusChecked,
+        locationName: location?.name || '',
+        updatedBy: user?.email || ''
+      }
+    });
   };
 
   useEffect(() => {

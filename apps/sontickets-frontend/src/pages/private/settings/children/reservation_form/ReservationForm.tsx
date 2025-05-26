@@ -42,6 +42,7 @@ import {
 } from 'firebase/firestore';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useActivityLogs } from '~/hooks/useActivityLogs';
 
 const ENV = import.meta.env.VITE_NODE_ENV;
 const isDev = ENV === 'DEV';
@@ -61,6 +62,7 @@ const ReservationForm = () => {
   const [fieldSelectedPreview, setFieldSelectedPreview] = useState<FormField>();
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const { logActivity } = useActivityLogs();
 
   const {
     register,
@@ -134,8 +136,34 @@ const ReservationForm = () => {
         const index = fields.findIndex((field) => field.slug === fieldSelected.slug);
         fields[index] = newField;
         newFields = [...fields];
+        
+        // Log form field edit activity
+        await logActivity({
+          activityType: 'form_field_edit',
+          entityId: form.id,
+          entityType: 'form',
+          details: {
+            fieldSlug: newField.slug,
+            fieldName: newField.name.es,
+            fieldType: newField.type,
+            updatedBy: user.email || ''
+          }
+        });
       } else {
         newFields = [...fields, newField];
+        
+        // Log form field add activity
+        await logActivity({
+          activityType: 'form_field_add',
+          entityId: form.id,
+          entityType: 'form',
+          details: {
+            fieldSlug: newField.slug,
+            fieldName: newField.name.es,
+            fieldType: newField.type,
+            updatedBy: user.email || ''
+          }
+        });
       }
 
       await setDoc(
@@ -153,6 +181,20 @@ const ReservationForm = () => {
 
       await updateDoc(doc(firebaseFirestore, 'forms', formRef.id), {
         id: formRef.id,
+      });
+      
+      // Log form field add activity for new form
+      await logActivity({
+        activityType: 'form_field_add',
+        entityId: formRef.id,
+        entityType: 'form',
+        details: {
+          fieldSlug: newField.slug,
+          fieldName: newField.name.es,
+          fieldType: newField.type,
+          updatedBy: user.email || '',
+          isNewForm: true
+        }
       });
 
       setIsSaving(false);

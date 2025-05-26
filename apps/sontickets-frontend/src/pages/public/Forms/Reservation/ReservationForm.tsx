@@ -70,6 +70,7 @@ import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '~/hooks/useAuth';
 import { useErrorLogs } from '~/hooks/useErrorLogs';
+import { useActivityLogs } from '~/hooks/useActivityLogs';
 
 const ENV = import.meta.env.VITE_NODE_ENV;
 const isDev = ENV === 'DEV';
@@ -81,6 +82,7 @@ type ReservationFormProps = {
 const ReservationForm = ({ reservation }: ReservationFormProps) => {
   const lang = useLang();
   const { user } = useAuth();
+  const { logActivity } = useActivityLogs();
 
   const from = useGetParam('from');
   const companyId = useGetParam('company');
@@ -391,6 +393,26 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
         const { reservationRefCreated, code } = await createReservation(newReservation);
         reservationId = reservationRefCreated.id;
         reservationCode = code;
+
+        
+        
+        // Log the reservation creation activity
+        await logActivity({
+          activityType: 'reservation_create',
+          entityId: reservationId,
+          entityType: 'reservation',
+          locationId: locationFound?.id,
+          details: {
+            reservationCode,
+            customerName: data.namesAndSurnames || '',
+            numberPeople: data.numberPeople,
+            startDate: formatDate(startDatetime),
+            startHour: formatHourWithPeriod(zonedStartHour, ''),
+            endDate: isEndDateEnable ? formatDate(firebaseEndTimestamp?.toDate() ?? new Date()) : '',
+            endHour: endHourFormat,
+            from: from || 'website'
+          }
+        });
       } else {
         const reservationCurrentLocation = reservation?.location as Location;
         let reservationsUpdated: Reservations | undefined = { ...reservations };
@@ -423,6 +445,34 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
         );
 
         await updateReservation(reservation.id as string, newReservation);
+       
+        // Log the reservation modification activity
+        await logActivity({
+          activityType: 'reservation_modify',
+          entityId: reservation?.id as string,
+          entityType: 'reservation',
+          locationId: locationId,
+          details: {
+            reservationCode,
+            customerName: data.namesAndSurnames || '',
+            numberPeople: data.numberPeople,
+            previousReservation:{
+              id: reservation.id,
+              startDate: formatDate((reservation.startDatetime as Timestamp).toDate()),
+              startHour: reservation.startHour,
+              endDate:   formatDate( (reservation.endDatetime as Timestamp).toDate()),
+              endHour: reservation.endHour,
+            },
+            updatedReservation:{
+              id: reservationId,
+              startDate:    newReservation.startDate,
+              startHour: newReservation.startHour,
+              endDate: newReservation.endDate,
+              endHour: newReservation.endHour,
+            },
+          
+          }
+        });
       }
 
       if (reservations && reservations?.[formattedStartDate]) {

@@ -29,6 +29,7 @@ import firebaseFirestore from '~/config/firebase/firestore/firestore';
 import useFetchReservation from '~/hooks/useFetchReservation';
 import { formatDate, formatHourWithPeriod, getTimestampUtcToZonedTime } from '~/utils/date';
 import ReservationSummary from './ReservationSummary';
+import { useActivityLogs } from '~/hooks/useActivityLogs';
 
 // Declare the global gtag_report_conversion function
 declare global {
@@ -51,6 +52,7 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
   const reservation = useFetchReservation(reservationId);
   // New state to hold company data
   const [company, setCompany] = useState<Company>();
+  const { logActivity } = useActivityLogs();
 
   useEffect(() => {
     if (textSuccess.current) {
@@ -65,6 +67,22 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
     await updateDoc(reservationRef, {
       status: 'cancelled',
       cancelledBy: auth.user.uid ? 'system' : 'customer',
+    });
+
+    // Log the cancellation activity
+    await logActivity({
+      activityType: 'reservation_delete',
+      entityId: reservationId,
+      entityType: 'reservation',
+      locationId: typeof reservation?.location === 'object' ? (reservation?.location as any)?.id || '' : '',
+      details: {
+        code: reservation?.code || '',
+        customerName: reservation?.name || '',
+        date: getDay,
+        startHour: getStarHour,
+        cancelledBy: auth.user.uid ? 'system' : 'customer',
+        status: 'cancelled'
+      }
     });
 
     toast.success(t('general.text_cancelled_reservation') ?? '');

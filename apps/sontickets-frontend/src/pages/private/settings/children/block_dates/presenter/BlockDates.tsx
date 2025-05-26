@@ -42,6 +42,8 @@ import { handleIsInvalidField } from '~/utils/general';
 import * as yup from 'yup';
 import { RestrictDatesRepositoryImpl } from '../data/repositories/RestrictDatesRepositoryImpl';
 import { getDateStartOfDay } from '~/utils/date';
+import { useActivityLogs } from '~/hooks/useActivityLogs';
+import { useAuth } from '~/hooks/useAuth';
 
 interface IFormInputs {
   open: boolean;
@@ -80,6 +82,8 @@ const BlockDates = ({ locationUuid = '' }: { locationUuid: string }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { logActivity } = useActivityLogs();
+  const { user } = useAuth();
 
   const [daySchedule, setDaySchedule] = useState<BlockDate>();
 
@@ -113,6 +117,19 @@ const BlockDates = ({ locationUuid = '' }: { locationUuid: string }) => {
         locationUuid: locationUuid,
         'block-dates': blockDates,
       });
+      
+      // Log block date delete activity
+      await logActivity({
+        activityType: 'block_dates_delete',
+        entityId: locationUuid,
+        entityType: 'location',
+        details: {
+          date: formatDay,
+          locationName: location?.name || '',
+          updatedBy: user?.email || ''
+        }
+      });
+      
       setIsDeleting(false);
       await getLocation();
       onClose();
@@ -123,6 +140,7 @@ const BlockDates = ({ locationUuid = '' }: { locationUuid: string }) => {
     setIsSaving(true);
 
     const formatDay = format(date, 'yyyy-MM-dd');
+    const isNewBlockDate = !location?.schedule?.['block-dates']?.[formatDay];
 
     if (!location?.schedule?.['block-dates']) {
       await restrictDatesRepository.current.setBlockDate({
@@ -134,6 +152,21 @@ const BlockDates = ({ locationUuid = '' }: { locationUuid: string }) => {
           },
         },
       });
+      
+      // Log block date add activity
+      await logActivity({
+        activityType: 'block_dates_add',
+        entityId: locationUuid,
+        entityType: 'location',
+        details: {
+          date: formatDay,
+          open: data.open,
+          hours: data.hours,
+          locationName: location?.name || '',
+          updatedBy: user?.email || ''
+        }
+      });
+      
       await getLocation();
       setIsSaving(false);
       onClose();
@@ -151,6 +184,21 @@ const BlockDates = ({ locationUuid = '' }: { locationUuid: string }) => {
       locationUuid: locationUuid,
       'block-dates': blockDates,
     });
+    
+    // Log block date add or edit activity
+    await logActivity({
+      activityType: isNewBlockDate ? 'block_dates_add' : 'block_dates_edit',
+      entityId: locationUuid,
+      entityType: 'location',
+      details: {
+        date: formatDay,
+        open: data.open,
+        hours: data.hours,
+        locationName: location?.name || '',
+        updatedBy: user?.email || ''
+      }
+    });
+    
     await getLocation();
     setIsSaving(false);
     onClose();

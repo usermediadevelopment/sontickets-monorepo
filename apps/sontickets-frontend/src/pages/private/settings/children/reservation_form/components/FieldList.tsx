@@ -8,6 +8,7 @@ import firebaseFirestore from '~/config/firebase/firestore';
 import { Form, FormField } from '~/core/types';
 import { useAuth } from '~/hooks/useAuth';
 import update from 'immutability-helper';
+import { useActivityLogs } from '~/hooks/useActivityLogs';
 
 import { CardField } from './CardField';
 
@@ -22,6 +23,7 @@ const FieldList = ({ selected, onClick, onClickNewField }: FieldListProps) => {
   const [form, setForm] = useState<Form>();
   const { user } = useAuth();
   const onSnaphotRef = useRef<any>();
+  const { logActivity } = useActivityLogs();
 
   const getFieldList = async () => {
     const q = query(
@@ -83,10 +85,13 @@ const FieldList = ({ selected, onClick, onClickNewField }: FieldListProps) => {
   );
 
   const onTrashClick = useCallback(
-    (index: number) => {
+    async (index: number) => {
       const deleteField = confirm('¿Estás seguro de eliminar este campo?');
 
       if (!deleteField) return;
+      
+      const fieldToDelete = fields[index];
+      
       setFields((prevCards: FormField[]) => {
         const newFields = update(prevCards, {
           $splice: [[index, 1]],
@@ -100,8 +105,21 @@ const FieldList = ({ selected, onClick, onClickNewField }: FieldListProps) => {
 
         return newFields;
       });
+      
+      // Log field deletion activity
+      await logActivity({
+        activityType: 'form_field_delete',
+        entityId: form?.id || '',
+        entityType: 'form',
+        details: {
+          fieldSlug: fieldToDelete.slug,
+          fieldName: fieldToDelete.name?.es || fieldToDelete.slug,
+          fieldType: fieldToDelete.type,
+          updatedBy: user.email || ''
+        }
+      });
     },
-    [fields]
+    [fields, form, user, logActivity]
   );
 
   const renderCard = useCallback(
