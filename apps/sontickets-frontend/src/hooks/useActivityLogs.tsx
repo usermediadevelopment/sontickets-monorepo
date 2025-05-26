@@ -1,9 +1,8 @@
 import { collection, addDoc } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import firebaseFirestore from '~/config/firebase/firestore/firestore';
-import useGetParam from './useGetParam';
 
-export type ActivityType = 
+export type ActivityType =
   // Transaction types
   | 'transaction_payment'
   | 'transaction_refund'
@@ -28,8 +27,8 @@ export type ActivityType =
 export type ActivityLogType = {
   id?: string;
   activityType: ActivityType;
-  entityId?: string;       // ID of the reservation, form, etc.
-  entityType?: string;     // 'reservation', 'form', 'settings', etc.
+  entityId?: string; // ID of the reservation, form, etc.
+  entityType?: string; // 'reservation', 'form', 'settings', etc.
   userId?: string;
   userEmail?: string;
   companyId?: string;
@@ -39,16 +38,17 @@ export type ActivityLogType = {
 };
 
 export const useActivityLogs = () => {
-  const companyId = useGetParam('company');
   const { user } = useAuth();
 
-  const logActivity = async (activity: Omit<ActivityLogType, 'userId' | 'userEmail' | 'timestamp'>) => {
+  const logActivity = async (
+    activity: Omit<ActivityLogType, 'userId' | 'userEmail' | 'timestamp'>
+  ) => {
     try {
-      const logsCollection = collection(firebaseFirestore, 'activityLogs');
-      
+      const logsCollection = collection(firebaseFirestore, 'activity_logs');
+
       const activityLog = {
         ...activity,
-        companyId: activity.companyId || companyId,
+        companyId: activity.companyId || user?.company?.id,
         userId: user?.uid || null,
         userEmail: user?.email || null,
         timestamp: new Date(),
@@ -63,7 +63,5 @@ export const useActivityLogs = () => {
     }
   };
 
-
-
-  return { logActivity};
-}; 
+  return { logActivity };
+};
