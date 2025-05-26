@@ -134,10 +134,11 @@ const ReservationForm = () => {
       let newFields = [];
       if (fieldSelected) {
         const index = fields.findIndex((field) => field.slug === fieldSelected.slug);
+        const previousField = fields[index]; // Store the previous field value
         fields[index] = newField;
         newFields = [...fields];
-        
-        // Log form field edit activity
+
+        // Log form field edit activity with previous and current values
         await logActivity({
           activityType: 'form_field_edit',
           entityId: form.id,
@@ -146,12 +147,30 @@ const ReservationForm = () => {
             fieldSlug: newField.slug,
             fieldName: newField.name.es,
             fieldType: newField.type,
-            updatedBy: user.email || ''
-          }
+            updatedBy: user.email || '',
+            previousValue: {
+              name: previousField.name,
+              placeholder: previousField.placeholder,
+              defaultValue: previousField.defaultValue,
+              required: previousField.required,
+              hasConfirmation: previousField.hasConfirmation,
+              type: previousField.type,
+              options: previousField.options,
+            },
+            currentValue: {
+              name: newField.name,
+              placeholder: newField.placeholder,
+              defaultValue: newField.defaultValue,
+              required: newField.required,
+              hasConfirmation: newField.hasConfirmation,
+              type: newField.type,
+              options: newField.options,
+            },
+          },
         });
       } else {
         newFields = [...fields, newField];
-        
+
         // Log form field add activity
         await logActivity({
           activityType: 'form_field_add',
@@ -161,8 +180,8 @@ const ReservationForm = () => {
             fieldSlug: newField.slug,
             fieldName: newField.name.es,
             fieldType: newField.type,
-            updatedBy: user.email || ''
-          }
+            updatedBy: user.email || '',
+          },
         });
       }
 
@@ -182,7 +201,7 @@ const ReservationForm = () => {
       await updateDoc(doc(firebaseFirestore, 'forms', formRef.id), {
         id: formRef.id,
       });
-      
+
       // Log form field add activity for new form
       await logActivity({
         activityType: 'form_field_add',
@@ -193,8 +212,8 @@ const ReservationForm = () => {
           fieldName: newField.name.es,
           fieldType: newField.type,
           updatedBy: user.email || '',
-          isNewForm: true
-        }
+          isNewForm: true,
+        },
       });
 
       setIsSaving(false);

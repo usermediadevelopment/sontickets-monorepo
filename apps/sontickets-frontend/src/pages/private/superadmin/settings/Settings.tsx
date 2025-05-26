@@ -3,6 +3,7 @@ import { Text, Flex, Tabs, TabList, Tab, TabPanels, TabPanel } from '@chakra-ui/
 import BusinessSettings from './business/presenter/page/Business';
 import LocationsSettings from './locations/presenter/page/Locations';
 import UsersSettings from './users/presenter/page/Users';
+import ActivityLogs from '../activityLogs/ActivityLogs';
 
 const SuperAdminSettings = () => {
   return (
@@ -15,6 +16,7 @@ const SuperAdminSettings = () => {
           <Tab textAlign={'left'}>Negocios</Tab>
           <Tab>Ubicaciones</Tab>
           <Tab>Usuarios</Tab>
+          <Tab>Logs</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -27,6 +29,10 @@ const SuperAdminSettings = () => {
 
           <TabPanel>
             <UsersSettings />
+          </TabPanel>
+
+          <TabPanel>
+            <ActivityLogs />
           </TabPanel>
         </TabPanels>
       </Tabs>

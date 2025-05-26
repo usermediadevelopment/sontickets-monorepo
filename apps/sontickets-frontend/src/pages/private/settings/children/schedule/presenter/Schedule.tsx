@@ -71,11 +71,13 @@ const Schedule = ({ locationUuid = '', isDisabled = false }: ScheduleProps) => {
       const newValues: { opening?: string; closing?: string } = {};
 
       if (original?.opening !== updated.opening) {
+        changes.push('opening');
         previousValues.opening = original?.opening;
         newValues.opening = updated.opening;
       }
 
       if (original?.closing !== updated.closing) {
+        changes.push('closing');
         previousValues.closing = original?.closing;
         newValues.closing = updated.closing;
       }
