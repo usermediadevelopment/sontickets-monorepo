@@ -10,6 +10,21 @@ export type ActivityType =
   | 'reservation_create'
   | 'reservation_modify'
   | 'reservation_delete'
+  // Consolidated reservation modification
+  | 'reservation_modification_complete'
+  // Detailed reservation debugging types
+  | 'reservation_location_update_before'
+  | 'reservation_location_update_after'
+  | 'location_reservations_updated'
+  | 'reservation_hour_change'
+  | 'reservation_location_change'
+  | 'reservation_debug_info'
+  // Error types
+  | 'reservation_error'
+  | 'location_update_error'
+  | 'firestore_error'
+  | 'validation_error'
+  | 'general_error'
   // Settings types
   | 'settings_update'
   // Email template types

@@ -136,7 +136,11 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
           }
         : {}),
       ...Object.fromEntries(searchParams.entries()),
-      emailConfirmation: searchParams.get('email')  ? searchParams.get('email') : (isDev ? 'arangotorcar@gmail.com' : ''),
+      emailConfirmation: searchParams.get('email')
+        ? searchParams.get('email')
+        : isDev
+        ? 'arangotorcar@gmail.com'
+        : '',
     },
   });
 
@@ -207,6 +211,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
 
   const updateLocationResevartion = async (
     reservationId: string,
+    _reservationCode: string,
     locationId: string,
     reservationsUpdated: any,
     formattedDate: string
@@ -394,8 +399,6 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
         reservationId = reservationRefCreated.id;
         reservationCode = code;
 
-        
-        
         // Log the reservation creation activity
         await logActivity({
           activityType: 'reservation_create',
@@ -408,14 +411,64 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
             numberPeople: data.numberPeople,
             startDate: formatDate(startDatetime),
             startHour: formatHourWithPeriod(zonedStartHour, ''),
-            endDate: isEndDateEnable ? formatDate(firebaseEndTimestamp?.toDate() ?? new Date()) : '',
+            endDate: isEndDateEnable
+              ? formatDate(firebaseEndTimestamp?.toDate() ?? new Date())
+              : '',
             endHour: endHourFormat,
-            from: from || 'website'
-          }
+            from: from || 'website',
+          },
         });
       } else {
         const reservationCurrentLocation = reservation?.location as Location;
         let reservationsUpdated: Reservations | undefined = { ...reservations };
+
+        // Capture initial state for comprehensive logging
+        const modificationProcess = {
+          startTime: Date.now(),
+          isLocationChanging: reservationCurrentLocation?.id !== data.location,
+          isTimeChanging: false,
+          currentState: {
+            location: {
+              id: reservationCurrentLocation?.id,
+              name: reservationCurrentLocation?.name,
+            },
+            dateTime: {
+              startDate: formatDate((reservation.startDatetime as Timestamp).toDate()),
+              startHour: reservation.startHour,
+              endDate: reservation.endDatetime
+                ? formatDate((reservation.endDatetime as Timestamp).toDate())
+                : '',
+              endHour: reservation.endHour,
+            },
+            numberPeople: reservation.numberPeople,
+          },
+          newState: {
+            location: {
+              id: locationFound?.id,
+              name: locationFound?.name,
+            },
+            dateTime: {
+              startDate: formatDate(startDatetime),
+              startHour: formatHourWithPeriod(zonedStartHour, ''),
+              endDate: isEndDateEnable
+                ? formatDate(firebaseEndTimestamp?.toDate() ?? new Date())
+                : '',
+              endHour: endHourFormat,
+            },
+            numberPeople: data.numberPeople,
+          },
+          locationReservations: {
+            beforeUpdate: {} as any,
+            afterUpdate: {} as any,
+          },
+          locationUpdates: [] as any[],
+          errors: [] as any[],
+        };
+
+        // Check if hours are changing
+        modificationProcess.isTimeChanging =
+          reservation.startHour !== formatHourWithPeriod(zonedStartHour, '') ||
+          reservation.endHour !== endHourFormat;
 
         if (reservation && reservationCurrentLocation?.id !== data.location) {
           reservationsUpdated = locations.find(
@@ -430,8 +483,17 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
 
         const reservationStartDate = formatDate((reservation.startDatetime as Timestamp).toDate());
 
+        // Capture location reservations state BEFORE any updates
+        modificationProcess.locationReservations.beforeUpdate = JSON.parse(
+          JSON.stringify(reservationsUpdated || {})
+        );
+
+        // Capture location updates for logging
+        const beforeUpdate = JSON.stringify(reservationsUpdated || {});
+
         await updateLocationResevartion(
           reservationId,
+          reservationCode,
           locationId,
           reservationsUpdated,
           reservationStartDate
@@ -439,39 +501,110 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
 
         await updateLocationResevartion(
           reservationId,
+          reservationCode,
           locationId,
           reservationsUpdated,
           formattedStartDate
         );
 
+        // Capture after update state
+        const afterUpdate = JSON.stringify(reservationsUpdated || {});
+
+        // Capture location reservations state AFTER updates
+        modificationProcess.locationReservations.afterUpdate = JSON.parse(
+          JSON.stringify(reservationsUpdated || {})
+        );
+
+        modificationProcess.locationUpdates.push({
+          type: 'location_data_update',
+          locationId: locationId,
+          beforeState: beforeUpdate,
+          afterState: afterUpdate,
+          affectedDates: [reservationStartDate, formattedStartDate],
+        });
+
         await updateReservation(reservation.id as string, newReservation);
-       
-        // Log the reservation modification activity
+
+        // Log comprehensive modification record
         await logActivity({
-          activityType: 'reservation_modify',
+          activityType: 'reservation_modification_complete',
           entityId: reservation?.id as string,
           entityType: 'reservation',
-          locationId: locationId,
+          locationId: locationFound?.id,
           details: {
-            reservationCode,
+            // Basic information
+            reservationId: reservation?.id,
+            reservationCode: reservation?.code,
             customerName: data.namesAndSurnames || '',
-            numberPeople: data.numberPeople,
-            previousReservation:{
+            processedAt: new Date().toISOString(),
+            processingTime: Date.now() - modificationProcess.startTime,
+
+            // Modification summary
+            modifications: {
+              isLocationChanging: modificationProcess.isLocationChanging,
+              isTimeChanging: modificationProcess.isTimeChanging,
+              isNumberPeopleChanging:
+                modificationProcess.currentState.numberPeople !==
+                modificationProcess.newState.numberPeople,
+            },
+
+            // Previous state
+            previousReservation: {
               id: reservation.id,
+              location: modificationProcess.currentState.location,
+              dateTime: modificationProcess.currentState.dateTime,
+              numberPeople: modificationProcess.currentState.numberPeople,
               startDate: formatDate((reservation.startDatetime as Timestamp).toDate()),
               startHour: reservation.startHour,
-              endDate:   formatDate( (reservation.endDatetime as Timestamp).toDate()),
+              endDate: reservation.endDatetime
+                ? formatDate((reservation.endDatetime as Timestamp).toDate())
+                : '',
               endHour: reservation.endHour,
             },
-            updatedReservation:{
+
+            // New state
+            updatedReservation: {
               id: reservationId,
-              startDate:    newReservation.startDate,
+              location: modificationProcess.newState.location,
+              dateTime: modificationProcess.newState.dateTime,
+              numberPeople: modificationProcess.newState.numberPeople,
+              startDate: newReservation.startDate,
               startHour: newReservation.startHour,
               endDate: newReservation.endDate,
               endHour: newReservation.endHour,
             },
-          
-          }
+
+            // Location reservations data (before and after)
+            locationReservationsData: {
+              beforeUpdate: modificationProcess.locationReservations.beforeUpdate,
+              afterUpdate: modificationProcess.locationReservations.afterUpdate,
+              affectedLocationId: locationId,
+              affectedDates: [reservationStartDate, formattedStartDate],
+            },
+
+            // Location updates performed
+            locationUpdates: modificationProcess.locationUpdates,
+
+            // Form data submitted
+            formData: {
+              location: data.location,
+              date: data.date,
+              startHour: data.startHour,
+              endHour: data.endHour,
+              numberPeople: data.numberPeople,
+              email: data.email,
+            },
+
+            // System context
+            systemInfo: {
+              userAgent: navigator.userAgent,
+              url: window.location.href,
+              timestamp: new Date().toISOString(),
+            },
+
+            // Errors encountered (if any)
+            errors: modificationProcess.errors,
+          },
         });
       }
 
@@ -546,6 +679,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
       }
 
       await updateLocation(locationFound?.id ?? '', { reservations });
+
       window.dataLayer.push({
         event: 'reservation-created',
       });
@@ -570,6 +704,51 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
       }
     } catch (error) {
       setIsLoading(false);
+
+      // Log detailed error information for debugging
+      await logActivity({
+        activityType: 'reservation_error',
+        entityId: reservation?.id ? String(reservation.id) : 'unknown',
+        entityType: 'reservation',
+        locationId:
+          typeof data.location === 'string'
+            ? data.location
+            : String((data.location as any)?.id || data.location),
+        details: {
+          errorMessage: (error as Error).message,
+          errorStack: (error as Error).stack,
+          reservationId: reservation?.id ? String(reservation.id) : '',
+          reservationCode: reservation?.code ? String(reservation.code) : '',
+          customerName: data.namesAndSurnames ? String(data.namesAndSurnames) : '',
+          attemptedOperation: reservation ? 'update_reservation' : 'create_reservation',
+          formData: {
+            location: String(data.location),
+            date: String(data.date),
+            startHour: String(data.startHour || ''),
+            endHour: String(data.endHour || ''),
+            numberPeople: String(data.numberPeople || ''),
+            email: String(data.email || ''),
+          },
+          locationInfo: {
+            currentLocationId: reservation
+              ? String((reservation.location as Location)?.id || '')
+              : '',
+            newLocationId: String(data.location),
+          },
+          systemInfo: {
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+            url: window.location.href,
+          },
+          reservationState: {
+            isExistingReservation: !!reservation,
+            wasLocationChanging: reservation
+              ? String((reservation.location as Location)?.id || '') !== String(data.location)
+              : false,
+          },
+        },
+      });
+
       await logError(error as Error);
     }
   };
