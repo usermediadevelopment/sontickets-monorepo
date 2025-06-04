@@ -87,14 +87,13 @@ export const Forms = () => {
       <Center h={'100vh'}>
         <VStack spacing={4} textAlign='center' maxW='400px' px={4}>
           <Text fontSize='2xl' fontWeight='bold' color='red.500'>
-            Servicio de reservas no disponible
+            Servicio de reservas inactivo
           </Text>
           <Text color='gray.600' fontSize='lg'>
-            El servicio de reservas de {company.name} se encuentra temporalmente inactivo.
+            El servicio de reservas de {company.name} se encuentra temporalmente inactivo con la
+            plataforma Sontickets.
           </Text>
-          <Text color='gray.500' fontSize='md'>
-            Para más información, contacte a {company.name}.
-          </Text>
+
           <Box mt={8}>
             <Text fontSize={'sm'} textAlign={'center'}>
               Desarrollado por
