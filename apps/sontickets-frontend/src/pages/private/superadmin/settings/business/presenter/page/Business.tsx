@@ -13,17 +13,29 @@ import {
   useDisclosure,
   Box,
   Image,
+  Badge,
+  Switch,
+  Tooltip,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
 import firebaseFirestore from '~/config/firebase/firestore';
 
 import CompanyProfileModal from '../components/CompanyProfileModal';
-import { collection, getDocs, doc, query, where, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, query, where, getDoc, updateDoc } from 'firebase/firestore';
 import { Company } from '~/core/types';
+import { toast } from 'react-toastify';
 
 const BusinessSettings = () => {
-  const [companies, setCompanies] = useState<{ name: string; id: string; logoUrl: string }[]>([]);
+  const [companies, setCompanies] = useState<
+    Array<{
+      name: string;
+      id: string;
+      logoUrl: string;
+      status: 'active' | 'inactive';
+      type: string;
+    }>
+  >([]);
   const [company, setCompany] = useState<Partial<Company>>();
   const [selectedUser, setSelectedUser] = useState<any>();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -36,6 +48,7 @@ const BusinessSettings = () => {
       id: doc.id,
       logoUrl: doc.data().logoUrl,
       type: doc.data().type,
+      status: (doc.data().status as 'active' | 'inactive') || 'active', // Default to active if not set
     }));
     setCompanies(companiesData);
   };
@@ -58,6 +71,22 @@ const BusinessSettings = () => {
     const user = await getDoc(userDocSnap.user);
 
     setSelectedUser(user.data());
+  };
+
+  const toggleCompanyStatus = async (companyId: string, currentStatus: 'active' | 'inactive') => {
+    try {
+      const newStatus: 'active' | 'inactive' = currentStatus === 'active' ? 'inactive' : 'active';
+      const companyRef = doc(firebaseFirestore, 'companies', companyId);
+      await updateDoc(companyRef, {
+        status: newStatus,
+        updatedAt: new Date(),
+      });
+      toast.success(`Empresa ${newStatus === 'active' ? 'activada' : 'desactivada'} correctamente`);
+      await getCompanies(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating company status:', error);
+      toast.error('Error al actualizar el estado de la empresa');
+    }
   };
 
   useEffect(() => {
@@ -86,6 +115,8 @@ const BusinessSettings = () => {
               <Th>Id</Th>
               <Th>Nombre</Th>
               <Th>Logo</Th>
+              <Th>Estado</Th>
+              <Th>Acciones</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -107,6 +138,21 @@ const BusinessSettings = () => {
                     <Box>
                       <Image boxSize='30px' objectFit='cover' src={company.logoUrl} />
                     </Box>
+                  </Td>
+                  <Td>
+                    <Badge colorScheme={company.status === 'active' ? 'green' : 'red'}>
+                      {company.status === 'active' ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                  </Td>
+                  <Td>
+                    <Tooltip label={company.status === 'active' ? 'Desactivar' : 'Activar'}>
+                      <Switch
+                        isChecked={company.status === 'active'}
+                        onChange={async () => {
+                          await toggleCompanyStatus(company.id, company.status);
+                        }}
+                      />
+                    </Tooltip>
                   </Td>
                 </Tr>
               );

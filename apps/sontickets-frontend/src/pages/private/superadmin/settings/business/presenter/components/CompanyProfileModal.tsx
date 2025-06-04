@@ -183,6 +183,7 @@ const CompanyProfileModal = ({
         externalId,
         logoUrl,
         type: data.company_type,
+        status: 'active',
         settings: {
           emailsTo: [data.email],
         },

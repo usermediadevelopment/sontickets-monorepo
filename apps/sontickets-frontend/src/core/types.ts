@@ -132,6 +132,7 @@ export type Company = {
   id: string;
   externalId: string;
   type: string;
+  status?: 'active' | 'inactive';
   isLeadsActive: boolean;
   settings: {
     reservationUpdates: {

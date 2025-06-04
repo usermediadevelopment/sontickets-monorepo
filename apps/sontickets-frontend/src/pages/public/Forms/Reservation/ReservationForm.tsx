@@ -71,6 +71,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '~/hooks/useAuth';
 import { useErrorLogs } from '~/hooks/useErrorLogs';
 import { useActivityLogs } from '~/hooks/useActivityLogs';
+import { useCompanyStatus } from '~/hooks/useCompanyStatus';
 
 const ENV = import.meta.env.VITE_NODE_ENV;
 const isDev = ENV === 'DEV';
@@ -83,6 +84,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
   const lang = useLang();
   const { user } = useAuth();
   const { logActivity } = useActivityLogs();
+  const { isLoading: isCompanyStatusLoading, companyStatus } = useCompanyStatus();
 
   const from = useGetParam('from');
   const companyId = useGetParam('company');
@@ -108,6 +110,10 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
   const { i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { logError } = useErrorLogs();
+
+  // Check if company is active - disable form if company is inactive
+  const isFormDisabled = companyStatus === 'inactive';
+
   const {
     register,
     handleSubmit,
@@ -817,6 +823,33 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
         }}
         reservationId={reservationCreated?.id as string}
       />
+    );
+  }
+
+  // Show loading while checking company status
+  if (isCompanyStatusLoading) {
+    return (
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
+        <VStack>
+          <Spinner size='lg' />
+          <Text>Verificando estado de la empresa...</Text>
+        </VStack>
+      </Box>
+    );
+  }
+
+  // Show message if company is inactive
+  if (isFormDisabled) {
+    return (
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
+        <VStack spacing={4} textAlign='center'>
+          <Text fontSize='xl' fontWeight='bold' color='red.500'>
+            Servicio no disponible
+          </Text>
+          <Text color='gray.600'>Esta empresa se encuentra temporalmente inactiva.</Text>
+          <Text color='gray.600'>Para más información, contacte al administrador.</Text>
+        </VStack>
+      </Box>
     );
   }
 

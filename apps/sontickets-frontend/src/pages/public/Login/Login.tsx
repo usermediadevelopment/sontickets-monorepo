@@ -12,11 +12,11 @@ import {
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FirebaseError } from 'firebase/app';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as yup from 'yup';
 import firebaseAuth from '~/config/firebase/auth';
@@ -28,6 +28,8 @@ export default function Login() {
   const { signIn } = useAuth();
   const [isLogin, setIsLogin] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const {
     register,
     handleSubmit,
@@ -36,6 +38,16 @@ export default function Login() {
     mode: 'onBlur',
     resolver: yupResolver(schema),
   });
+
+  // Check for error parameters and show appropriate messages
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error === 'company_inactive') {
+      toast.error('Su empresa se encuentra inactiva. Contacte al administrador para reactivarla.');
+    } else if (error === 'company_not_found') {
+      toast.error('No se encontró información de la empresa. Contacte al administrador.');
+    }
+  }, [searchParams]);
 
   const loginWithEmailAndPassword = async (email: string, password: string) => {
     try {
@@ -71,6 +83,15 @@ export default function Login() {
         // Obtengo datos de company
         const companyDoc = await getDoc(userCompanyDoc.company);
         company = { ...(companyDoc.data() as any), id: companyDoc.id };
+
+        // Check company status - prevent login if inactive
+        const companyStatus = company.status || 'active'; // Default to active if not set
+        if (companyStatus === 'inactive') {
+          signOut(firebaseAuth);
+          toast.error('Su empresa se encuentra inactiva. Contacte al administrador.');
+          setIsLogin(false);
+          return;
+        }
 
         // Obtengo role
         const roleDoc = await getDoc(userCompanyDoc.role);
