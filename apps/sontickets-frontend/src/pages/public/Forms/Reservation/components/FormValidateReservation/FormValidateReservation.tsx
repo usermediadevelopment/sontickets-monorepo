@@ -49,6 +49,7 @@ import useGetParam from '~/hooks/useGetParam';
 import { useAuth } from '~/hooks/useAuth';
 import { format } from 'date-fns';
 import { getHoursInRange } from '~/utils/date';
+import { useActivityLogs } from '~/hooks/useActivityLogs';
 
 const FormValidateReservation = () => {
   const { t } = useTranslation();
@@ -59,6 +60,7 @@ const FormValidateReservation = () => {
   const { changeForm } = useFormHook();
   const [isCanceling, setIsCanceling] = useState(false);
   const { user } = useAuth();
+  const { logActivity } = useActivityLogs();
 
   const {
     register,
@@ -191,64 +193,125 @@ const FormValidateReservation = () => {
                         isLoading={isCanceling}
                         loadingText='Submitting'
                         onClick={async () => {
+                          const startTime = Date.now();
                           setIsCanceling(true);
 
-                          const reservationId = reservation?.id as string;
-                          const locationId = (reservation?.location as Location).id;
+                          try {
+                            const reservationId = reservation?.id as string;
+                            const locationId = (reservation?.location as Location).id;
 
-                          const locationRef = doc(firebaseFirestore, 'locations', locationId);
-                          const locationDoc = await getDoc(locationRef);
-                          const locationData = locationDoc.data() as Location;
-                          const reservations = locationData.reservations ?? {};
+                            const locationRef = doc(firebaseFirestore, 'locations', locationId);
+                            const locationDoc = await getDoc(locationRef);
+                            const locationData = locationDoc.data() as Location;
+                            const reservations = locationData.reservations ?? {};
 
-                          const formattedDate = format(
-                            (reservation?.startDatetime as Timestamp).toDate(),
-                            'yyyy-MM-dd'
-                          );
+                            const formattedDate = format(
+                              (reservation?.startDatetime as Timestamp).toDate(),
+                              'yyyy-MM-dd'
+                            );
 
-                          const hoursInRange = getHoursInRange('00:00', '23:59');
+                            // Store before state for logging
+                            const beforeUpdate = JSON.parse(JSON.stringify(reservations));
 
-                          if (reservations[formattedDate]) {
-                            for (let index = 0; index < hoursInRange.length; index++) {
-                              const hour = hoursInRange[index];
-                              if (
-                                reservations[formattedDate][hour] &&
-                                reservations[formattedDate][hour].length > 0
-                              ) {
-                                const hoursFound = reservations[formattedDate][hour];
+                            const hoursInRange = getHoursInRange('00:00', '23:59');
+                            let hoursCleared: string[] = [];
 
-                                const reservationIndex = hoursFound.findIndex(
-                                  (id) => id == reservationId
-                                );
-                                if (reservationIndex > -1) {
-                                  hoursFound.splice(reservationIndex, 1);
-                                  reservations[formattedDate][hour] = hoursFound;
+                            if (reservations[formattedDate]) {
+                              for (let index = 0; index < hoursInRange.length; index++) {
+                                const hour = hoursInRange[index];
+                                if (
+                                  reservations[formattedDate][hour] &&
+                                  reservations[formattedDate][hour].length > 0
+                                ) {
+                                  const hoursFound = reservations[formattedDate][hour];
+
+                                  const reservationIndex = hoursFound.findIndex(
+                                    (id) => id == reservationId
+                                  );
+                                  if (reservationIndex > -1) {
+                                    hoursFound.splice(reservationIndex, 1);
+                                    reservations[formattedDate][hour] = hoursFound;
+                                    hoursCleared.push(hour);
+                                  }
                                 }
                               }
+
+                              await updateDoc(locationRef, {
+                                ...locationData,
+                                reservations,
+                              });
                             }
 
-                            await updateDoc(locationRef, {
-                              ...locationData,
-                              reservations,
+                            const reservationRef = doc(
+                              firebaseFirestore,
+                              'reservations',
+                              reservationId
+                            );
+                            await updateDoc(reservationRef, {
+                              status: 'cancelled',
+                              cancelledBy: user.uid ? 'system' : 'customer',
                             });
-                          }
 
-                          const reservationRef = doc(
-                            firebaseFirestore,
-                            'reservations',
-                            reservationId
-                          );
-                          await updateDoc(reservationRef, {
-                            status: 'cancelled',
-                            cancelledBy: user.uid ? 'system' : 'customer',
-                          });
-                          toast.success(t('general.text_cancelled_reservation') ?? '');
-                          onClose();
-                          if (user.uid) {
-                            window.location.reload();
-                          }
+                            const processingTime = Date.now() - startTime;
 
-                          setIsCanceling(false);
+                            // Single comprehensive cancellation log focusing on locationReservationsData
+                            await logActivity({
+                              activityType: 'reservation_cancellation_complete',
+                              entityId: reservationId,
+                              entityType: 'reservation',
+                              locationId: locationId,
+                              details: {
+                                processingTime: processingTime,
+                                processedAt: new Date().toISOString(),
+                                reservationCode: reservation?.code || '',
+                                customerName:
+                                  reservation?.name || reservation?.namesAndSurnames || 'Unknown',
+                                startDate: formattedDate,
+                                startHour: format(
+                                  (reservation?.startDatetime as Timestamp).toDate(),
+                                  'HH:mm'
+                                ),
+                                endHour: reservation?.endDatetime
+                                  ? format((reservation.endDatetime as Timestamp).toDate(), 'HH:mm')
+                                  : undefined,
+                                numberPeople: reservation?.numberPeople || 0,
+                                cancelledBy: user.uid ? 'system' : 'customer',
+                                cancellationMethod: 'validate_reservation_form',
+                                locationReservationsData: {
+                                  locationId: locationId,
+                                  affectedDate: formattedDate,
+                                  hoursCleared: hoursCleared,
+                                  beforeUpdate: {
+                                    [formattedDate]: beforeUpdate[formattedDate] ?? [],
+                                  },
+                                  afterUpdate: {
+                                    [formattedDate]: reservations[formattedDate] ?? [],
+                                  },
+                                },
+                                summary: {
+                                  wasSuccessful: true,
+                                  totalHoursCleared: hoursCleared.length,
+                                  cancellationSource: 'validate_reservation_form',
+                                },
+                                systemInfo: {
+                                  timestamp: new Date().toISOString(),
+                                  url: window.location.href,
+                                  userAgent: navigator.userAgent,
+                                },
+                              },
+                            });
+
+                            toast.success(t('general.text_cancelled_reservation') ?? '');
+                            onClose();
+                            if (user.uid) {
+                              window.location.reload();
+                            }
+                          } catch (error) {
+                            console.error('Error cancelling reservation:', error);
+                            toast.error('Error cancelling reservation');
+                          } finally {
+                            setIsCanceling(false);
+                          }
                         }}
                         variant='outline'
                       >

@@ -104,7 +104,11 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
 
       const formattedDate = format((reservation.startDatetime as Timestamp).toDate(), 'yyyy-MM-dd');
 
+      // Store before state for logging
+      const beforeUpdate = JSON.parse(JSON.stringify(reservations));
+
       const hoursInRange = getHoursInRange('00:00', '23:59');
+      let hoursCleared: string[] = [];
 
       if (reservations[formattedDate]) {
         for (let index = 0; index < hoursInRange.length; index++) {
@@ -116,6 +120,7 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
             if (reservationIndex > -1) {
               hoursFound.splice(reservationIndex, 1);
               reservations[formattedDate][hour] = hoursFound;
+              hoursCleared.push(hour);
             }
           }
         }
@@ -133,19 +138,45 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
         cancelledBy: auth.user?.uid ? 'system' : 'customer',
       });
 
-      // Log the cancellation activity
+      // Log comprehensive cancellation with focused locationReservationsData
       await logActivity({
-        activityType: 'reservation_delete',
+        activityType: 'reservation_cancellation_complete',
         entityId: reservationId,
         entityType: 'reservation',
         locationId: locationId,
         details: {
-          code: reservation?.code || '',
-          customerName: reservation?.name || '',
-          date: getDay,
-          startHour: getStarHour,
+          processedAt: new Date().toISOString(),
+          reservationCode: reservation?.code || '',
+          customerName: reservation?.name || reservation?.namesAndSurnames || 'Unknown',
+          startDate: formattedDate,
+          startHour: format((reservation.startDatetime as Timestamp).toDate(), 'HH:mm'),
+          endHour: reservation?.endDatetime
+            ? format((reservation.endDatetime as Timestamp).toDate(), 'HH:mm')
+            : undefined,
+          numberPeople: reservation?.numberPeople || 0,
           cancelledBy: auth.user?.uid ? 'system' : 'customer',
-          status: 'cancelled',
+          cancellationMethod: 'success_form',
+          locationReservationsData: {
+            locationId: locationId,
+            affectedDate: formattedDate,
+            hoursCleared: hoursCleared,
+            beforeUpdate: {
+              [formattedDate]: beforeUpdate[formattedDate] ?? [],
+            },
+            afterUpdate: {
+              [formattedDate]: reservations[formattedDate] ?? [],
+            },
+          },
+          summary: {
+            wasSuccessful: true,
+            totalHoursCleared: hoursCleared.length,
+            cancellationSource: 'success_form',
+          },
+          systemInfo: {
+            timestamp: new Date().toISOString(),
+            url: window.location.href,
+            userAgent: navigator.userAgent,
+          },
         },
       });
 

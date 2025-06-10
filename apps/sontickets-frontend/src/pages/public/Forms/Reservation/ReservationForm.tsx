@@ -476,7 +476,10 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
           reservation.startHour !== formatHourWithPeriod(zonedStartHour, '') ||
           reservation.endHour !== endHourFormat;
 
-        if (reservation && reservationCurrentLocation?.id !== data.location) {
+        const locations = await getLocations();
+        const locationFoundInternal = locations.find((location) => location.id === data.location);
+
+        if (reservation && reservationCurrentLocation?.id !== locationFoundInternal?.id) {
           reservationsUpdated = locations.find(
             (location) => location.id === reservationCurrentLocation?.id
           )?.reservations;
@@ -536,7 +539,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
           activityType: 'reservation_modification_complete',
           entityId: reservation?.id as string,
           entityType: 'reservation',
-          locationId: locationFound?.id,
+          locationId: locationFoundInternal?.id,
           details: {
             // Basic information
             reservationId: reservation?.id,
@@ -580,12 +583,22 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
               endHour: newReservation.endHour,
             },
 
-            // Location reservations data (before and after)
+            // Location reservations data (before and after) - focused on affected dates only
             locationReservationsData: {
-              beforeUpdate: modificationProcess.locationReservations.beforeUpdate,
-              afterUpdate: modificationProcess.locationReservations.afterUpdate,
-              affectedLocationId: locationId,
+              locationId: locationId,
               affectedDates: [reservationStartDate, formattedStartDate],
+              beforeUpdate: {
+                [reservationStartDate]:
+                  modificationProcess.locationReservations.beforeUpdate[reservationStartDate] ?? [],
+                [formattedStartDate]:
+                  modificationProcess.locationReservations.beforeUpdate[formattedStartDate] ?? [],
+              },
+              afterUpdate: {
+                [reservationStartDate]:
+                  modificationProcess.locationReservations.afterUpdate[reservationStartDate] ?? [],
+                [formattedStartDate]:
+                  modificationProcess.locationReservations.afterUpdate[formattedStartDate] ?? [],
+              },
             },
 
             // Location updates performed
