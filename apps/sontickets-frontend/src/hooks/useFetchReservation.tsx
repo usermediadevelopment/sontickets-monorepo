@@ -10,7 +10,7 @@ const useFetchReservation = (id: string): Reservation | undefined => {
     const reservationRef = doc(firebaseFirestore, 'reservations', id);
     const docSnap = await getDoc(reservationRef);
     if (docSnap.exists()) {
-      setReservation(docSnap.data() as Reservation);
+      setReservation({ ...docSnap.data(), id: docSnap.id } as Reservation);
     }
   };
 

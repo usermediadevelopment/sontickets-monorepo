@@ -192,7 +192,6 @@ const FormValidateReservation = () => {
                         loadingText='Submitting'
                         onClick={async () => {
                           setIsCanceling(true);
-                          onClose();
 
                           const reservationId = reservation?.id as string;
                           const locationId = (reservation?.location as Location).id;
@@ -244,6 +243,7 @@ const FormValidateReservation = () => {
                             cancelledBy: user.uid ? 'system' : 'customer',
                           });
                           toast.success(t('general.text_cancelled_reservation') ?? '');
+                          onClose();
                           if (user.uid) {
                             window.location.reload();
                           }

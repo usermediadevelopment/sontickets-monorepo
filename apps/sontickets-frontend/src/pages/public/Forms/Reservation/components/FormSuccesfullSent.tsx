@@ -18,8 +18,9 @@ import {
 } from '@chakra-ui/react';
 import esLocale from 'date-fns/locale/es';
 import enLocale from 'date-fns/locale/en-US';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Company, FormType } from '~/core/types';
+import { format } from 'date-fns';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Company, FormType, Location } from '~/core/types';
 import { useForm as useFormHook } from '~/hooks/useForm';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '~/hooks/useAuth';
@@ -27,7 +28,12 @@ import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import firebaseFirestore from '~/config/firebase/firestore/firestore';
 import useFetchReservation from '~/hooks/useFetchReservation';
-import { formatDate, formatHourWithPeriod, getTimestampUtcToZonedTime } from '~/utils/date';
+import {
+  formatDate,
+  formatHourWithPeriod,
+  getTimestampUtcToZonedTime,
+  getHoursInRange,
+} from '~/utils/date';
 import ReservationSummary from './ReservationSummary';
 import { useActivityLogs } from '~/hooks/useActivityLogs';
 
@@ -60,36 +66,98 @@ const FormSuccesfullSent = ({ reservationId, onBack }: FormSuccesfullSentProps) 
     }
   }, [textSuccess]);
 
-  const handleCancelReservation = async () => {
+  const handleCancelReservation = useCallback(async () => {
     setIsCanceling(true);
     onClose!();
-    const reservationRef = doc(firebaseFirestore, 'reservations', reservationId);
-    await updateDoc(reservationRef, {
-      status: 'cancelled',
-      cancelledBy: auth.user.uid ? 'system' : 'customer',
-    });
 
-    // Log the cancellation activity
-    await logActivity({
-      activityType: 'reservation_delete',
-      entityId: reservationId,
-      entityType: 'reservation',
-      locationId: typeof reservation?.location === 'object' ? (reservation?.location as any)?.id || '' : '',
-      details: {
-        code: reservation?.code || '',
-        customerName: reservation?.name || '',
-        date: getDay,
-        startHour: getStarHour,
-        cancelledBy: auth.user.uid ? 'system' : 'customer',
-        status: 'cancelled'
+    try {
+      // Validate required data
+      if (!reservation?.id) {
+        throw new Error('Reservation ID is required');
       }
-    });
 
-    toast.success(t('general.text_cancelled_reservation') ?? '');
+      if (!reservation?.location || typeof reservation.location !== 'object') {
+        throw new Error('Invalid location data');
+      }
 
-    onBack!();
-    setIsCanceling!(false);
-  };
+      if (!reservation?.startDatetime) {
+        throw new Error('Start datetime is required');
+      }
+
+      const reservationId = reservation.id;
+      const locationId = (reservation.location as Location).id;
+
+      if (!locationId) {
+        throw new Error('Location ID is required');
+      }
+
+      // Update location's reservations data structure
+      const locationRef = doc(firebaseFirestore, 'locations', locationId);
+      const locationDoc = await getDoc(locationRef);
+
+      if (!locationDoc.exists()) {
+        throw new Error('Location not found');
+      }
+
+      const locationData = locationDoc.data() as Location;
+      const reservations = locationData.reservations ?? {};
+
+      const formattedDate = format((reservation.startDatetime as Timestamp).toDate(), 'yyyy-MM-dd');
+
+      const hoursInRange = getHoursInRange('00:00', '23:59');
+
+      if (reservations[formattedDate]) {
+        for (let index = 0; index < hoursInRange.length; index++) {
+          const hour = hoursInRange[index];
+          if (reservations[formattedDate][hour] && reservations[formattedDate][hour].length > 0) {
+            const hoursFound = reservations[formattedDate][hour];
+
+            const reservationIndex = hoursFound.findIndex((id) => id == reservationId);
+            if (reservationIndex > -1) {
+              hoursFound.splice(reservationIndex, 1);
+              reservations[formattedDate][hour] = hoursFound;
+            }
+          }
+        }
+
+        await updateDoc(locationRef, {
+          ...locationData,
+          reservations,
+        });
+      }
+
+      // Update reservation status
+      const reservationRef = doc(firebaseFirestore, 'reservations', reservationId);
+      await updateDoc(reservationRef, {
+        status: 'cancelled',
+        cancelledBy: auth.user?.uid ? 'system' : 'customer',
+      });
+
+      // Log the cancellation activity
+      await logActivity({
+        activityType: 'reservation_delete',
+        entityId: reservationId,
+        entityType: 'reservation',
+        locationId: locationId,
+        details: {
+          code: reservation?.code || '',
+          customerName: reservation?.name || '',
+          date: getDay,
+          startHour: getStarHour,
+          cancelledBy: auth.user?.uid ? 'system' : 'customer',
+          status: 'cancelled',
+        },
+      });
+
+      toast.success(t('general.text_cancelled_reservation') ?? '');
+      onBack!();
+    } catch (error) {
+      console.error('Error cancelling reservation:', error);
+      toast.error('Error cancelling reservation');
+    } finally {
+      setIsCanceling(false);
+    }
+  }, [reservation, auth, logActivity, onBack, onClose, t]);
 
   const getDay = useMemo(() => {
     if (!reservation) return '';
