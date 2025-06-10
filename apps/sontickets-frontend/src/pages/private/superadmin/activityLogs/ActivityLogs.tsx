@@ -83,6 +83,13 @@ const activityTypeLabels: Record<ActivityType, string> = {
   reservation_create: 'Reservation Created',
   reservation_modify: 'Reservation Modified',
   reservation_delete: 'Reservation Deleted',
+  reservation_cancel: '🚫 Reservation Cancelled',
+  reservation_cancel_location_update_before: 'Cancel Location Update - Before',
+  reservation_cancel_location_update_after: 'Cancel Location Update - After',
+  reservation_cancel_complete: '✅ Reservation Cancellation Complete',
+  reservation_cancel_error: '❌ Reservation Cancellation Error',
+  reservation_cancellation_complete: 'Reservation Cancellation Complete ',
+  reservation_cancellation_error: '❌ Reservation Cancellation Error',
   reservation_modification_complete: '📋 Reservation Modified (Complete)',
   reservation_location_update_before: 'Location Update - Before',
   reservation_location_update_after: 'Location Update - After',
@@ -191,6 +198,13 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
               'reservation_create',
               'reservation_modify',
               'reservation_delete',
+              'reservation_cancel',
+              'reservation_cancel_location_update_before',
+              'reservation_cancel_location_update_after',
+              'reservation_cancel_complete',
+              'reservation_cancel_error',
+              'reservation_cancellation_complete',
+              'reservation_cancellation_error',
               'reservation_modification_complete',
             ])
           );
@@ -284,6 +298,13 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
                 'reservation_create',
                 'reservation_modify',
                 'reservation_delete',
+                'reservation_cancel',
+                'reservation_cancel_location_update_before',
+                'reservation_cancel_location_update_after',
+                'reservation_cancel_complete',
+                'reservation_cancel_error',
+                'reservation_cancellation_complete',
+                'reservation_cancellation_error',
                 'reservation_modification_complete',
               ])
             );
@@ -373,6 +394,7 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
 
   const getBadgeColor = (activityType: ActivityType) => {
     if (activityType.startsWith('transaction_')) return 'green';
+    if (activityType.startsWith('reservation_cancel')) return 'red';
     if (activityType.startsWith('reservation_')) return 'blue';
     if (activityType.endsWith('_error')) return 'red';
     if (activityType === 'settings_update') return 'purple';
@@ -664,6 +686,769 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
               </Stack>
             </Box>
           )}
+        </Stack>
+      );
+    }
+
+    // Handle reservation cancellation activity types
+    if (activity.activityType === 'reservation_cancel') {
+      return (
+        <Stack spacing={3}>
+          <Box borderBottom='1px' borderColor='red.200' pb={2}>
+            <Text fontWeight='bold' color='red.600'>
+              🚫 Reservation Cancellation Initiated
+            </Text>
+            {details?.reservationCode && (
+              <Text fontSize='sm' color='gray.600'>
+                Reservation: {details?.reservationCode}
+              </Text>
+            )}
+            {details?.customerName && (
+              <Text fontSize='sm' color='gray.600'>
+                Customer: {details?.customerName}
+              </Text>
+            )}
+          </Box>
+
+          <Stack spacing={2}>
+            <Box>
+              <Text fontWeight='bold' mb={1}>
+                Cancellation Details
+              </Text>
+              <Stack spacing={2} pl={2} borderLeft='2px' borderColor='red.400'>
+                <Box>
+                  <Text fontSize='sm' fontWeight='medium'>
+                    Cancelled By
+                  </Text>
+                  <Text
+                    fontSize='sm'
+                    color={details.cancelledBy === 'system' ? 'blue.600' : 'orange.600'}
+                  >
+                    {details.cancelledBy === 'system' ? 'Admin/System' : 'Customer'}
+                  </Text>
+                </Box>
+
+                {details?.cancellationReason && (
+                  <Box>
+                    <Text fontSize='sm' fontWeight='medium'>
+                      Reason
+                    </Text>
+                    <Text fontSize='sm'>{details?.cancellationReason}</Text>
+                  </Box>
+                )}
+
+                {details?.startDate && details?.startHour && (
+                  <Box>
+                    <Text fontSize='sm' fontWeight='medium'>
+                      Original Reservation
+                    </Text>
+                    <Text fontSize='sm'>
+                      {details?.startDate} at {details?.startHour}
+                      {details?.endHour && ` until ${details?.endHour}`}
+                    </Text>
+                    {details?.numberPeople && (
+                      <Text fontSize='sm' color='gray.600'>
+                        For {details?.numberPeople} people
+                      </Text>
+                    )}
+                  </Box>
+                )}
+              </Stack>
+            </Box>
+
+            {details?.systemInfo && (
+              <Box>
+                <Text fontWeight='bold' mb={1}>
+                  System Information
+                </Text>
+                <Box p={2} bg='gray.50' borderRadius='md' fontSize='xs'>
+                  <Text>Time: {details?.systemInfo?.timestamp}</Text>
+                  <Text>URL: {details?.systemInfo?.url}</Text>
+                </Box>
+              </Box>
+            )}
+          </Stack>
+        </Stack>
+      );
+    }
+
+    if (activity.activityType === 'reservation_cancel_complete') {
+      return (
+        <Stack spacing={3}>
+          <Box borderBottom='1px' borderColor='red.200' pb={2}>
+            <Text fontWeight='bold' color='red.600'>
+              ✅ Reservation Cancellation Completed
+            </Text>
+            {details?.reservationCode && (
+              <Text fontSize='sm' color='gray.600'>
+                Reservation: {details?.reservationCode}
+              </Text>
+            )}
+            {details?.customerName && (
+              <Text fontSize='sm' color='gray.600'>
+                Customer: {details?.customerName}
+              </Text>
+            )}
+          </Box>
+
+          {/* Cancellation Summary */}
+          <Box>
+            <Text fontWeight='bold' mb={2} color='green.600'>
+              🎯 Cancellation Summary
+            </Text>
+            <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='red.50'>
+                <Text fontSize='sm' fontWeight='bold' color='red.700' mb={1}>
+                  Cancelled By
+                </Text>
+                <Text fontSize='sm' color='red.800'>
+                  {details?.cancellationInfo?.cancelledBy === 'system'
+                    ? 'Admin/System'
+                    : 'Customer'}
+                </Text>
+              </Box>
+
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='blue.50'>
+                <Text fontSize='sm' fontWeight='bold' color='blue.700' mb={1}>
+                  Method
+                </Text>
+                <Text fontSize='sm' color='blue.800'>
+                  {details?.cancellationInfo?.cancellationMethod || 'Unknown'}
+                </Text>
+              </Box>
+
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='gray.50'>
+                <Text fontSize='sm' fontWeight='bold' color='gray.700' mb={1}>
+                  Cancelled At
+                </Text>
+                <Text fontSize='sm' color='gray.800'>
+                  {details?.cancellationInfo?.cancelledAt
+                    ? new Date(details?.cancellationInfo?.cancelledAt).toLocaleString()
+                    : 'Unknown'}
+                </Text>
+              </Box>
+            </Stack>
+          </Box>
+
+          {/* Original Reservation Details */}
+          {details?.reservationDetails && (
+            <Box>
+              <Text fontWeight='bold' mb={2} color='orange.600'>
+                📅 Original Reservation Details
+              </Text>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='orange.50'>
+                <Stack spacing={1}>
+                  <Text fontSize='sm'>
+                    <strong>Date & Time:</strong> {details?.reservationDetails?.originalStartDate}{' '}
+                    at {details?.reservationDetails?.originalStartHour}
+                    {details?.reservationDetails?.originalEndHour &&
+                      ` until ${details?.reservationDetails?.originalEndHour}`}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>People:</strong> {details?.reservationDetails?.originalNumberPeople}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Location:</strong>{' '}
+                    {details?.reservationDetails?.originalLocation?.name || 'Unknown'}
+                  </Text>
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {/* Location Updates */}
+          {details?.locationUpdates && (
+            <Box>
+              <Text fontWeight='bold' mb={2} color='purple.600'>
+                🔄 Location Data Updates
+              </Text>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='purple.50'>
+                <Stack spacing={1}>
+                  <Text fontSize='sm'>
+                    <strong>Location ID:</strong> {details?.locationUpdates?.locationId}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Affected Date:</strong> {details?.locationUpdates?.affectedDate}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Hours Cleared:</strong>{' '}
+                    {details?.locationUpdates?.hoursCleared?.length || 0} time slots
+                  </Text>
+                  {details?.locationUpdates?.hoursCleared?.length > 0 && (
+                    <Text fontSize='xs' color='gray.600'>
+                      Cleared hours: {details?.locationUpdates?.hoursCleared?.join(', ')}
+                    </Text>
+                  )}
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {/* User Information */}
+          {details?.cancellationInfo?.userInfo && (
+            <Box>
+              <Text fontWeight='bold' mb={2} color='teal.600'>
+                👤 User Information
+              </Text>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='teal.50'>
+                <Stack spacing={1}>
+                  <Text fontSize='sm'>
+                    <strong>User ID:</strong> {details?.cancellationInfo?.userInfo?.userId}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Email:</strong> {details?.cancellationInfo?.userInfo?.userEmail}
+                  </Text>
+                </Stack>
+              </Box>
+            </Box>
+          )}
+        </Stack>
+      );
+    }
+
+    if (
+      activity.activityType === 'reservation_cancel_location_update_before' ||
+      activity.activityType === 'reservation_cancel_location_update_after'
+    ) {
+      const isBefore = activity.activityType === 'reservation_cancel_location_update_before';
+      const locationData = details?.locationReservationsData;
+
+      return (
+        <Stack spacing={3}>
+          <Box borderBottom='1px' borderColor={isBefore ? 'yellow.200' : 'green.200'} pb={2}>
+            <Text fontWeight='bold' color={isBefore ? 'yellow.600' : 'green.600'}>
+              {isBefore
+                ? '📋 Before Cancellation Location Update'
+                : '✅ After Cancellation Location Update'}
+            </Text>
+            <Text fontSize='sm' color='gray.600'>
+              Location ID: {details.locationId} | Date: {details.formattedDate}
+            </Text>
+            {details.reservationCode && (
+              <Text fontSize='sm' color='blue.600'>
+                For Reservation: {details.reservationCode}
+              </Text>
+            )}
+          </Box>
+
+          {locationData && (
+            <Box>
+              <Text fontWeight='bold' mb={2}>
+                Location Reservations Data
+              </Text>
+
+              {isBefore ? (
+                <Box>
+                  <Text fontSize='sm' mb={2} color='yellow.700'>
+                    Data state before removing the cancelled reservation:
+                  </Text>
+                  {locationData.targetReservation && (
+                    <Text fontSize='sm' mb={2} color='red.600'>
+                      Target reservation to remove: {locationData.targetReservation}
+                    </Text>
+                  )}
+                  <Box
+                    bg='yellow.50'
+                    p={3}
+                    borderRadius='md'
+                    fontSize='xs'
+                    fontFamily='mono'
+                    maxH='200px'
+                    overflowY='auto'
+                  >
+                    <Text whiteSpace='pre-wrap'>
+                      {JSON.stringify(locationData.beforeUpdate || {}, null, 2)}
+                    </Text>
+                  </Box>
+                </Box>
+              ) : (
+                <Box>
+                  <Text fontSize='sm' mb={2} color='green.700'>
+                    Data state after removing the cancelled reservation:
+                  </Text>
+                  {locationData.hoursAffected?.length > 0 && (
+                    <Text fontSize='sm' mb={2} color='green.600'>
+                      Hours affected: {locationData.hoursAffected.join(', ')}
+                    </Text>
+                  )}
+                  <Box
+                    bg='green.50'
+                    p={3}
+                    borderRadius='md'
+                    fontSize='xs'
+                    fontFamily='mono'
+                    maxH='200px'
+                    overflowY='auto'
+                  >
+                    <Text whiteSpace='pre-wrap'>
+                      {JSON.stringify(locationData.afterUpdate || {}, null, 2)}
+                    </Text>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          )}
+        </Stack>
+      );
+    }
+
+    if (activity.activityType === 'reservation_cancel_error') {
+      return (
+        <Stack spacing={3}>
+          <Box borderBottom='1px' borderColor='red.200' pb={2}>
+            <Text fontWeight='bold' color='red.600'>
+              ❌ Reservation Cancellation Error
+            </Text>
+            {details.reservationCode && (
+              <Text fontSize='sm' color='gray.600'>
+                Reservation: {details.reservationCode}
+              </Text>
+            )}
+            {details.customerName && (
+              <Text fontSize='sm' color='gray.600'>
+                Customer: {details.customerName}
+              </Text>
+            )}
+          </Box>
+
+          {/* Error Details */}
+          <Box>
+            <Text fontWeight='bold' mb={2} color='red.600'>
+              Error Information
+            </Text>
+            <Stack spacing={2}>
+              <Box p={3} bg='red.50' borderWidth='1px' borderColor='red.200' borderRadius='md'>
+                <Text fontSize='sm' fontWeight='bold' color='red.700' mb={1}>
+                  Error Message
+                </Text>
+                <Text fontSize='sm' color='red.800'>
+                  {details.errorMessage || 'Unknown error occurred'}
+                </Text>
+              </Box>
+
+              {details.errorStack && (
+                <Box
+                  p={3}
+                  bg='gray.900'
+                  color='white'
+                  borderRadius='md'
+                  fontSize='xs'
+                  fontFamily='mono'
+                  maxH='150px'
+                  overflowY='auto'
+                >
+                  <Text whiteSpace='pre-wrap'>{details.errorStack}</Text>
+                </Box>
+              )}
+
+              {details.attemptedOperation && (
+                <Box
+                  p={3}
+                  bg='orange.50'
+                  borderWidth='1px'
+                  borderColor='orange.200'
+                  borderRadius='md'
+                >
+                  <Text fontSize='sm' fontWeight='bold' color='orange.700' mb={1}>
+                    Failed Operation
+                  </Text>
+                  <Text fontSize='sm' color='orange.800'>
+                    {details.attemptedOperation}
+                  </Text>
+                </Box>
+              )}
+            </Stack>
+          </Box>
+
+          {/* Cancellation Context */}
+          {details.cancellationContext && (
+            <Box>
+              <Text fontWeight='bold' mb={2} color='purple.600'>
+                Cancellation Context
+              </Text>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='purple.50'>
+                <Stack spacing={1}>
+                  <Text fontSize='sm'>
+                    <strong>Attempted By:</strong>{' '}
+                    {details.cancellationContext.cancelledBy === 'system'
+                      ? 'Admin/System'
+                      : 'Customer'}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Method:</strong>{' '}
+                    {details.cancellationContext.cancellationMethod || 'Unknown'}
+                  </Text>
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {/* System Information */}
+          {details.systemInfo && (
+            <Box>
+              <Text fontWeight='bold' mb={2} color='gray.600'>
+                System Information
+              </Text>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='gray.50'>
+                <Stack spacing={1}>
+                  <Text fontSize='xs'>
+                    <strong>Timestamp:</strong> {details.systemInfo.timestamp}
+                  </Text>
+                  <Text fontSize='xs'>
+                    <strong>URL:</strong> {details.systemInfo.url}
+                  </Text>
+                  {details.systemInfo.userAgent && (
+                    <Text fontSize='xs'>
+                      <strong>Browser:</strong> {details.systemInfo.userAgent}
+                    </Text>
+                  )}
+                </Stack>
+              </Box>
+            </Box>
+          )}
+        </Stack>
+      );
+    }
+
+    // Handle comprehensive reservation cancellation activity types
+    if (activity.activityType === 'reservation_cancellation_complete') {
+      return (
+        <Stack spacing={4}>
+          {/* Header with timing and summary */}
+          <Box borderBottom='1px' borderColor='red.200' pb={3}>
+            <Text fontWeight='bold' color='red.600' fontSize='lg'>
+              🎯 Comprehensive Reservation Cancellation
+            </Text>
+            <Flex gap={4} mt={2} flexWrap='wrap'>
+              {details.processingTime && (
+                <Badge colorScheme='gray' size='sm'>
+                  Processed in {details.processingTime}ms
+                </Badge>
+              )}
+              {details.processedAt && (
+                <Text fontSize='xs' color='gray.500'>
+                  Completed: {new Date(details.processedAt).toLocaleString()}
+                </Text>
+              )}
+            </Flex>
+          </Box>
+
+          {/* Cancellation Summary */}
+          <Box>
+            <Text fontWeight='bold' mb={2} color='red.600'>
+              🚫 Cancellation Summary
+            </Text>
+            <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
+              <Box p={3} borderWidth='2px' borderColor='red.300' borderRadius='md' bg='red.50'>
+                <Text fontSize='sm' fontWeight='bold' color='red.700' mb={1}>
+                  Cancelled By
+                </Text>
+                <Text fontSize='lg' color='red.800' fontWeight='bold'>
+                  {details.cancellationInfo?.cancelledBy === 'system' ? 'Admin/System' : 'Customer'}
+                </Text>
+              </Box>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='blue.50'>
+                <Text fontSize='sm' fontWeight='bold' color='blue.700' mb={1}>
+                  Method
+                </Text>
+                <Text fontSize='sm' color='blue.800'>
+                  {details.cancellationInfo?.cancellationMethod || 'Unknown'}
+                </Text>
+              </Box>
+              <Box
+                p={3}
+                borderWidth='1px'
+                borderRadius='md'
+                bg={details.summary?.wasSuccessful ? 'green.50' : 'red.50'}
+              >
+                <Text
+                  fontSize='sm'
+                  fontWeight='bold'
+                  color={details.summary?.wasSuccessful ? 'green.700' : 'red.700'}
+                  mb={1}
+                >
+                  Status
+                </Text>
+                <Text
+                  fontSize='sm'
+                  color={details.summary?.wasSuccessful ? 'green.800' : 'red.800'}
+                  fontWeight='bold'
+                >
+                  {details.summary?.wasSuccessful ? '✅ Success' : '❌ Failed'}
+                </Text>
+              </Box>
+            </Stack>
+          </Box>
+
+          {/* Original Reservation Details */}
+          {details.originalReservation && (
+            <Box>
+              <Text fontWeight='bold' mb={2} color='orange.600'>
+                📅 Original Reservation Details
+              </Text>
+              <Box
+                p={4}
+                borderWidth='2px'
+                borderColor='orange.200'
+                borderRadius='md'
+                bg='orange.50'
+              >
+                <Stack spacing={2}>
+                  <Text fontSize='sm'>
+                    <strong>Date & Time:</strong> {details.originalReservation.startDate} at{' '}
+                    {details.originalReservation.startHour}
+                    {details.originalReservation.endHour &&
+                      ` until ${details.originalReservation.endHour}`}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>People:</strong> {details.originalReservation.numberPeople}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Location:</strong>{' '}
+                    {details.originalReservation.location?.name || 'Unknown'}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Reservation Code:</strong> {details.originalReservation.code}
+                  </Text>
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {/* Location Updates Performed */}
+          {details.locationUpdates && (
+            <Box>
+              <Text fontWeight='bold' mb={3} color='purple.600'>
+                🔄 Location Data Updates
+              </Text>
+              <Box p={4} borderWidth='1px' borderRadius='md' bg='purple.50'>
+                <Stack spacing={3}>
+                  <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                    <Box>
+                      <Text fontSize='sm' fontWeight='bold' color='purple.700'>
+                        Hours Cleared
+                      </Text>
+                      <Text fontSize='lg' fontWeight='bold' color='purple.800'>
+                        {details.summary?.totalHoursCleared || 0}
+                      </Text>
+                    </Box>
+                    <Box>
+                      <Text fontSize='sm' fontWeight='bold' color='purple.700'>
+                        Operations
+                      </Text>
+                      <Text fontSize='lg' fontWeight='bold' color='purple.800'>
+                        {details.summary?.locationOperations || 0}
+                      </Text>
+                    </Box>
+                    <Box>
+                      <Text fontSize='sm' fontWeight='bold' color='purple.700'>
+                        Affected Date
+                      </Text>
+                      <Text fontSize='sm' color='purple.800'>
+                        {details.locationUpdates.affectedDate}
+                      </Text>
+                    </Box>
+                  </SimpleGrid>
+
+                  {details.locationUpdates.hoursCleared?.length > 0 && (
+                    <Box>
+                      <Text fontSize='sm' fontWeight='bold' color='purple.700' mb={2}>
+                        Cleared Time Slots
+                      </Text>
+                      <Box p={2} bg='purple.100' borderRadius='md'>
+                        <Text fontSize='xs' color='purple.800'>
+                          {details.locationUpdates.hoursCleared.join(', ')}
+                        </Text>
+                      </Box>
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {/* User Information (if system cancellation) */}
+          {details.cancellationInfo?.userInfo && (
+            <Box>
+              <Text fontWeight='bold' mb={2} color='teal.600'>
+                👤 Admin User Information
+              </Text>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='teal.50'>
+                <Stack spacing={1}>
+                  <Text fontSize='sm'>
+                    <strong>User ID:</strong> {details.cancellationInfo.userInfo.userId}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Email:</strong> {details.cancellationInfo.userInfo.userEmail}
+                  </Text>
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {/* System Information */}
+          <Box>
+            <Text fontWeight='bold' mb={2} color='gray.600'>
+              🖥️ System Information
+            </Text>
+            <Box p={3} borderWidth='1px' borderRadius='md' bg='gray.50'>
+              <Stack spacing={1}>
+                <Text fontSize='xs'>
+                  <strong>Timestamp:</strong> {details.systemInfo?.timestamp}
+                </Text>
+                <Text fontSize='xs'>
+                  <strong>URL:</strong> {details.systemInfo?.url}
+                </Text>
+                <Text fontSize='xs'>
+                  <strong>Source:</strong> {details.summary?.cancellationSource}
+                </Text>
+                {details.systemInfo?.userAgent && (
+                  <Text fontSize='xs'>
+                    <strong>Browser:</strong> {details.systemInfo.userAgent}
+                  </Text>
+                )}
+              </Stack>
+            </Box>
+          </Box>
+        </Stack>
+      );
+    }
+
+    if (activity.activityType === 'reservation_cancellation_error') {
+      return (
+        <Stack spacing={4}>
+          {/* Header */}
+          <Box borderBottom='1px' borderColor='red.200' pb={3}>
+            <Text fontWeight='bold' color='red.600' fontSize='lg'>
+              ❌ Comprehensive Reservation Cancellation Failed
+            </Text>
+            {details.processedAt && (
+              <Text fontSize='xs' color='gray.500' mt={1}>
+                Failed at: {new Date(details.processedAt).toLocaleString()}
+              </Text>
+            )}
+          </Box>
+
+          {/* Error Summary */}
+          <Box>
+            <Text fontWeight='bold' mb={2} color='red.600'>
+              🚨 Error Summary
+            </Text>
+            <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
+              <Box p={3} borderWidth='2px' borderColor='red.300' borderRadius='md' bg='red.50'>
+                <Text fontSize='sm' fontWeight='bold' color='red.700' mb={1}>
+                  Attempted By
+                </Text>
+                <Text fontSize='sm' color='red.800'>
+                  {details.cancellationContext?.cancelledBy === 'system'
+                    ? 'Admin/System'
+                    : 'Customer'}
+                </Text>
+              </Box>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='orange.50'>
+                <Text fontSize='sm' fontWeight='bold' color='orange.700' mb={1}>
+                  Failure Stage
+                </Text>
+                <Text fontSize='sm' color='orange.800'>
+                  {details.summary?.failureStage || 'Unknown'}
+                </Text>
+              </Box>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='gray.50'>
+                <Text fontSize='sm' fontWeight='bold' color='gray.700' mb={1}>
+                  Source
+                </Text>
+                <Text fontSize='sm' color='gray.800'>
+                  {details.summary?.cancellationSource || 'Unknown'}
+                </Text>
+              </Box>
+            </Stack>
+          </Box>
+
+          {/* Error Details */}
+          <Box>
+            <Text fontWeight='bold' mb={2} color='red.600'>
+              Error Details
+            </Text>
+            <Stack spacing={3}>
+              <Box p={4} bg='red.50' borderWidth='2px' borderColor='red.200' borderRadius='md'>
+                <Text fontSize='sm' fontWeight='bold' color='red.700' mb={2}>
+                  Error Message
+                </Text>
+                <Text fontSize='sm' color='red.800'>
+                  {details.errorMessage || 'Unknown error occurred'}
+                </Text>
+              </Box>
+
+              {details.errorStack && (
+                <Box>
+                  <Text fontSize='sm' fontWeight='bold' color='red.700' mb={2}>
+                    Stack Trace
+                  </Text>
+                  <Box
+                    p={3}
+                    bg='gray.900'
+                    color='white'
+                    borderRadius='md'
+                    fontSize='xs'
+                    fontFamily='mono'
+                    maxH='200px'
+                    overflowY='auto'
+                  >
+                    <Text whiteSpace='pre-wrap'>{details.errorStack}</Text>
+                  </Box>
+                </Box>
+              )}
+            </Stack>
+          </Box>
+
+          {/* Original Reservation Context */}
+          {details.originalReservation && (
+            <Box>
+              <Text fontWeight='bold' mb={2} color='orange.600'>
+                📅 Original Reservation Context
+              </Text>
+              <Box p={3} borderWidth='1px' borderRadius='md' bg='orange.50'>
+                <Stack spacing={1}>
+                  <Text fontSize='sm'>
+                    <strong>Reservation Code:</strong> {details.originalReservation.code}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Date & Time:</strong> {details.originalReservation.startDate} at{' '}
+                    {details.originalReservation.startHour}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>Location:</strong>{' '}
+                    {details.originalReservation.location?.name || 'Unknown'}
+                  </Text>
+                  <Text fontSize='sm'>
+                    <strong>People:</strong> {details.originalReservation.numberPeople}
+                  </Text>
+                </Stack>
+              </Box>
+            </Box>
+          )}
+
+          {/* System Information */}
+          <Box>
+            <Text fontWeight='bold' mb={2} color='gray.600'>
+              🖥️ System Information
+            </Text>
+            <Box p={3} borderWidth='1px' borderRadius='md' bg='gray.50'>
+              <Stack spacing={1}>
+                <Text fontSize='xs'>
+                  <strong>Timestamp:</strong> {details.systemInfo?.timestamp}
+                </Text>
+                <Text fontSize='xs'>
+                  <strong>URL:</strong> {details.systemInfo?.url}
+                </Text>
+                {details.systemInfo?.userAgent && (
+                  <Text fontSize='xs'>
+                    <strong>Browser:</strong> {details.systemInfo.userAgent}
+                  </Text>
+                )}
+              </Stack>
+            </Box>
+          </Box>
         </Stack>
       );
     }
@@ -1646,12 +2431,24 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
       hasChanges: false,
       reservationCode: '',
       customerName: '',
+      locationInfo: '',
     };
 
     // Extract reservation code
     summary.reservationCode =
       details.reservationCode || details.code || getContextInfo(activity) || '';
     summary.customerName = details.customerName || '';
+
+    // Extract location information
+    summary.locationInfo =
+      details.originalReservation?.location?.name ||
+      details.previousReservation?.location?.name ||
+      details.updatedReservation?.location?.name ||
+      details.currentLocation?.name ||
+      details.newLocation?.name ||
+      details.previousLocation?.name ||
+      details.locationName ||
+      '';
 
     switch (activity.activityType) {
       case 'reservation_modification_complete':
@@ -1787,9 +2584,207 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
         }
         break;
 
+      case 'reservation_cancel':
+        summary.subtitle = `Cancellation initiated`;
+        summary.hasChanges = true;
+        if (details.cancelledBy) {
+          summary.keyInfo.push({
+            label: 'Cancelled By',
+            value: details.cancelledBy === 'system' ? 'Admin/System' : 'Customer',
+            color: 'red.600',
+          });
+        }
+        if (details.startDate && details.startHour) {
+          summary.keyInfo.push({
+            label: 'Original Date & Time',
+            value: `${details.startDate} at ${details.startHour}`,
+          });
+        }
+        if (details.cancellationReason) {
+          summary.keyInfo.push({
+            label: 'Reason',
+            value: details.cancellationReason,
+            color: 'gray.600',
+          });
+        }
+        break;
+
+      case 'reservation_cancel_complete':
+        summary.subtitle = `Cancellation completed successfully`;
+        summary.hasChanges = true;
+        if (details.cancellationInfo?.cancelledBy) {
+          summary.keyInfo.push({
+            label: 'Cancelled By',
+            value: details.cancellationInfo.cancelledBy === 'system' ? 'Admin/System' : 'Customer',
+            color: 'red.600',
+          });
+        }
+        if (
+          details.reservationDetails?.originalStartDate &&
+          details.reservationDetails?.originalStartHour
+        ) {
+          summary.keyInfo.push({
+            label: 'Original Date & Time',
+            value: `${details.reservationDetails.originalStartDate} at ${details.reservationDetails.originalStartHour}`,
+          });
+        }
+        if (details.locationUpdates?.hoursCleared?.length > 0) {
+          summary.keyInfo.push({
+            label: 'Hours Cleared',
+            value: `${details.locationUpdates.hoursCleared.length} time slots`,
+            color: 'green.600',
+          });
+        }
+        break;
+
+      case 'reservation_cancel_error':
+        summary.subtitle = details.errorMessage || 'Cancellation failed';
+        summary.hasChanges = true;
+        if (details.attemptedOperation) {
+          summary.keyInfo.push({
+            label: 'Failed Operation',
+            value: details.attemptedOperation,
+            color: 'red.500',
+          });
+        }
+        if (details.cancellationContext?.cancelledBy) {
+          summary.keyInfo.push({
+            label: 'Attempted By',
+            value:
+              details.cancellationContext.cancelledBy === 'system' ? 'Admin/System' : 'Customer',
+            color: 'red.500',
+          });
+        }
+        if (details.systemInfo?.timestamp) {
+          summary.keyInfo.push({
+            label: 'Error Time',
+            value: new Date(details.systemInfo.timestamp).toLocaleString(),
+            color: 'gray.500',
+          });
+        }
+        break;
+
+      case 'reservation_cancellation_complete':
+        summary.subtitle = `Comprehensive cancellation completed`;
+        summary.hasChanges = true;
+        if (details.cancellationInfo?.cancelledBy) {
+          summary.keyInfo.push({
+            label: 'Cancelled By',
+            value: details.cancellationInfo.cancelledBy === 'system' ? 'Admin/System' : 'Customer',
+            color: 'red.600',
+          });
+        }
+        if (details.originalReservation?.startDate && details.originalReservation?.startHour) {
+          summary.keyInfo.push({
+            label: 'Original Date & Time',
+            value: `${details.originalReservation.startDate} at ${details.originalReservation.startHour}`,
+          });
+        }
+        if (details.summary?.totalHoursCleared > 0) {
+          summary.keyInfo.push({
+            label: 'Hours Cleared',
+            value: `${details.summary.totalHoursCleared} time slots`,
+            color: 'green.600',
+          });
+        }
+        // Show location reservations changes summary
+        if (details.locationUpdates?.affectedDate) {
+          summary.keyInfo.push({
+            label: 'Location Data',
+            value: `${details.locationUpdates.affectedDate} modified`,
+            color: 'purple.600',
+          });
+        }
+        if (details.processingTime) {
+          summary.keyInfo.push({
+            label: 'Processing Time',
+            value: `${details.processingTime}ms`,
+            color: 'gray.500',
+          });
+        }
+        break;
+
+      case 'reservation_cancellation_error':
+        summary.subtitle = details.errorMessage || 'Comprehensive cancellation failed';
+        summary.hasChanges = true;
+        if (details.attemptedOperation) {
+          summary.keyInfo.push({
+            label: 'Failed Operation',
+            value: details.attemptedOperation,
+            color: 'red.500',
+          });
+        }
+        if (details.cancellationContext?.cancelledBy) {
+          summary.keyInfo.push({
+            label: 'Attempted By',
+            value:
+              details.cancellationContext.cancelledBy === 'system' ? 'Admin/System' : 'Customer',
+            color: 'red.500',
+          });
+        }
+        if (details.originalReservation?.startDate && details.originalReservation?.startHour) {
+          summary.keyInfo.push({
+            label: 'Original Date & Time',
+            value: `${details.originalReservation.startDate} at ${details.originalReservation.startHour}`,
+            color: 'red.500',
+          });
+        }
+        if (details.summary?.failureStage) {
+          summary.keyInfo.push({
+            label: 'Failure Stage',
+            value: details.summary.failureStage,
+            color: 'red.500',
+          });
+        }
+        break;
+
       case 'reservation_modify':
         summary.subtitle = `Reservation modified`;
         summary.hasChanges = true;
+        break;
+
+      case 'reservation_cancel_location_update_before':
+        summary.subtitle = `Before cancellation location update - ${details.formattedDate}`;
+        summary.keyInfo.push({
+          label: 'Location',
+          value: details.locationId || 'Unknown',
+        });
+        if (details.reservationCode) {
+          summary.keyInfo.push({
+            label: 'For Reservation',
+            value: details.reservationCode,
+            color: 'blue.600',
+          });
+        }
+        if (details.locationReservationsData?.targetReservation) {
+          summary.keyInfo.push({
+            label: 'Target to Remove',
+            value: details.locationReservationsData.targetReservation,
+            color: 'red.600',
+          });
+        }
+        break;
+
+      case 'reservation_cancel_location_update_after':
+        summary.subtitle = `After cancellation location update - ${details.formattedDate}`;
+        summary.keyInfo.push({
+          label: 'Location',
+          value: details.locationId || 'Unknown',
+        });
+        if (details.reservationCode) {
+          summary.keyInfo.push({
+            label: 'For Reservation',
+            value: details.reservationCode,
+            color: 'blue.600',
+          });
+        }
+        if (details.locationReservationsData?.hoursAffected?.length > 0) {
+          summary.keyInfo.push({
+            label: 'Hours Affected',
+            value: `${details.locationReservationsData.hoursAffected.length} slots`,
+            color: 'green.600',
+          });
+        }
         break;
 
       case 'reservation_location_update_before':
@@ -1943,10 +2938,48 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
     const formatJsonData = (data: any) => {
       try {
         const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-        return JSON.stringify(parsed, null, 2);
+
+        // Sort time slots chronologically for location reservations data
+        const sortedData = sortLocationReservationsData(parsed);
+
+        return JSON.stringify(sortedData, null, 2);
       } catch {
         return String(data);
       }
+    };
+
+    const sortLocationReservationsData = (data: any): any => {
+      if (!data || typeof data !== 'object') return data;
+
+      const sortedData = { ...data };
+
+      // Check if this looks like location reservations data (has date keys with hour objects)
+      for (const key in sortedData) {
+        const value = sortedData[key];
+
+        // Check if this is a date key (YYYY-MM-DD format) with hour data
+        if (typeof value === 'object' && value !== null && /^\d{4}-\d{2}-\d{2}$/.test(key)) {
+          // Sort the hours chronologically
+          const sortedHours: any = {};
+          const hourKeys = Object.keys(value).sort((a, b) => {
+            // Convert time format (HH:MM) to minutes for comparison
+            const timeToMinutes = (timeStr: string) => {
+              const [hours, minutes] = timeStr.split(':').map(Number);
+              return hours * 60 + minutes;
+            };
+
+            return timeToMinutes(a) - timeToMinutes(b);
+          });
+
+          hourKeys.forEach((hour) => {
+            sortedHours[hour] = value[hour];
+          });
+
+          sortedData[key] = sortedHours;
+        }
+      }
+
+      return sortedData;
     };
 
     return (
@@ -1960,7 +2993,6 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
             <Text fontSize='sm' color='gray.500'>
               {formatDate(activity.timestamp)}
             </Text>
-            {summary.hasChanges && <Badge colorScheme='orange'>Modified</Badge>}
           </Flex>
 
           <Text fontSize='lg' fontWeight='medium' mb={3}>
@@ -2169,17 +3201,23 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
         )}
 
         {/* Location Reservations Data (Before/After) */}
-        {details.locationReservationsData && (
+        {(details.locationReservationsData || details.locationUpdates) && (
           <Box mb={6}>
             <Text fontSize='lg' fontWeight='bold' mb={3} color='indigo.600'>
               🗂️ Location Reservations Data Changes
             </Text>
             <Box p={3} borderWidth='1px' borderRadius='md' bg='indigo.50' mb={3}>
               <Text fontSize='sm' fontWeight='bold' color='indigo.700' mb={1}>
-                Affected Location: {details.locationReservationsData.affectedLocationId}
+                Affected Location:{' '}
+                {details.locationReservationsData?.affectedLocationId ||
+                  details.locationUpdates?.locationId ||
+                  activity.locationId}
               </Text>
               <Text fontSize='xs' color='gray.600'>
-                Affected Dates: {details.locationReservationsData.affectedDates?.join(', ')}
+                Affected Dates:{' '}
+                {details.locationReservationsData?.affectedDates?.join(', ') ||
+                  details.locationUpdates?.affectedDate ||
+                  'N/A'}
               </Text>
             </Box>
 
@@ -2192,11 +3230,13 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
                   </Text>
                   <Button
                     size='xs'
-                    onClick={() =>
-                      copyToClipboard(
-                        JSON.stringify(details.locationReservationsData.beforeUpdate, null, 2)
-                      )
-                    }
+                    onClick={() => {
+                      const data =
+                        details.locationReservationsData?.beforeUpdate ||
+                        details.locationUpdates?.beforeUpdate;
+                      const sortedData = sortLocationReservationsData(data);
+                      copyToClipboard(JSON.stringify(sortedData, null, 2));
+                    }}
                   >
                     Copy JSON
                   </Button>
@@ -2213,7 +3253,10 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
                   overflowY='auto'
                 >
                   <Text whiteSpace='pre-wrap'>
-                    {formatJsonData(details.locationReservationsData.beforeUpdate)}
+                    {formatJsonData(
+                      details.locationReservationsData?.beforeUpdate ||
+                        details.locationUpdates?.beforeUpdate
+                    )}
                   </Text>
                 </Box>
               </Box>
@@ -2226,11 +3269,13 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
                   </Text>
                   <Button
                     size='xs'
-                    onClick={() =>
-                      copyToClipboard(
-                        JSON.stringify(details.locationReservationsData.afterUpdate, null, 2)
-                      )
-                    }
+                    onClick={() => {
+                      const data =
+                        details.locationReservationsData?.afterUpdate ||
+                        details.locationUpdates?.afterUpdate;
+                      const sortedData = sortLocationReservationsData(data);
+                      copyToClipboard(JSON.stringify(sortedData, null, 2));
+                    }}
                   >
                     Copy JSON
                   </Button>
@@ -2247,7 +3292,10 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
                   overflowY='auto'
                 >
                   <Text whiteSpace='pre-wrap'>
-                    {formatJsonData(details.locationReservationsData.afterUpdate)}
+                    {formatJsonData(
+                      details.locationReservationsData?.afterUpdate ||
+                        details.locationUpdates?.afterUpdate
+                    )}
                   </Text>
                 </Box>
               </Box>
@@ -2260,22 +3308,135 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
               </Text>
               <Stack spacing={1}>
                 <Text fontSize='xs' color='yellow.800'>
-                  <strong>Location:</strong> {details.locationReservationsData.affectedLocationId}
+                  <strong>Location:</strong>{' '}
+                  {details.locationReservationsData?.affectedLocationId ||
+                    details.locationUpdates?.locationId ||
+                    activity.locationId}
                 </Text>
                 <Text fontSize='xs' color='yellow.800'>
                   <strong>Dates Modified:</strong>{' '}
-                  {details.locationReservationsData.affectedDates?.join(', ')}
+                  {details.locationReservationsData?.affectedDates?.join(', ') ||
+                    details.locationUpdates?.affectedDate ||
+                    'N/A'}
                 </Text>
                 <Text fontSize='xs' color='yellow.800'>
                   <strong>Before Keys:</strong>{' '}
-                  {Object.keys(details.locationReservationsData.beforeUpdate || {}).length} dates
+                  {
+                    Object.keys(
+                      details.locationReservationsData?.beforeUpdate ||
+                        details.locationUpdates?.beforeUpdate ||
+                        {}
+                    ).length
+                  }{' '}
+                  dates
                 </Text>
                 <Text fontSize='xs' color='yellow.800'>
                   <strong>After Keys:</strong>{' '}
-                  {Object.keys(details.locationReservationsData.afterUpdate || {}).length} dates
+                  {
+                    Object.keys(
+                      details.locationReservationsData?.afterUpdate ||
+                        details.locationUpdates?.afterUpdate ||
+                        {}
+                    ).length
+                  }{' '}
+                  dates
                 </Text>
               </Stack>
             </Box>
+
+            {/* Detailed Hour-by-Hour Analysis */}
+            {(details.locationReservationsData?.beforeUpdate ||
+              details.locationUpdates?.beforeUpdate) &&
+              (details.locationReservationsData?.afterUpdate ||
+                details.locationUpdates?.afterUpdate) && (
+                <Box mt={4} p={3} borderWidth='1px' borderRadius='md' bg='blue.50'>
+                  <Text fontSize='sm' fontWeight='bold' color='blue.700' mb={3}>
+                    🔍 Detailed Hour-by-Hour Changes
+                  </Text>
+                  {(() => {
+                    const before =
+                      details.locationReservationsData?.beforeUpdate ||
+                      details.locationUpdates?.beforeUpdate;
+                    const after =
+                      details.locationReservationsData?.afterUpdate ||
+                      details.locationUpdates?.afterUpdate;
+                    const analysisResults = [];
+
+                    for (const date in before) {
+                      if (before[date] && typeof before[date] === 'object') {
+                        // Sort hours chronologically for this date
+                        const sortedHours = Object.keys(before[date]).sort((a, b) => {
+                          const timeToMinutes = (timeStr: string) => {
+                            const [hours, minutes] = timeStr.split(':').map(Number);
+                            return hours * 60 + minutes;
+                          };
+                          return timeToMinutes(a) - timeToMinutes(b);
+                        });
+
+                        for (const hour of sortedHours) {
+                          const beforeHour = before[date][hour] || [];
+                          const afterHour = after[date]?.[hour] || [];
+
+                          if (JSON.stringify(beforeHour) !== JSON.stringify(afterHour)) {
+                            analysisResults.push({
+                              date,
+                              hour,
+                              before: beforeHour,
+                              after: afterHour,
+                              action:
+                                beforeHour.length > afterHour.length
+                                  ? 'removed'
+                                  : beforeHour.length < afterHour.length
+                                  ? 'added'
+                                  : 'modified',
+                            });
+                          }
+                        }
+                      }
+                    }
+
+                    return analysisResults.length > 0 ? (
+                      <Stack spacing={2}>
+                        {analysisResults.map((change, idx) => (
+                          <Box key={idx} p={2} bg='white' borderRadius='md' borderWidth='1px'>
+                            <Flex align='center' gap={2} mb={1}>
+                              <Badge
+                                colorScheme={
+                                  change.action === 'removed'
+                                    ? 'red'
+                                    : change.action === 'added'
+                                    ? 'green'
+                                    : 'orange'
+                                }
+                                size='sm'
+                              >
+                                {change.action.toUpperCase()}
+                              </Badge>
+                              <Text fontSize='xs' fontWeight='bold'>
+                                {change.date} at {change.hour}
+                              </Text>
+                            </Flex>
+                            <Stack spacing={1}>
+                              <Text fontSize='xs'>
+                                <strong>Before:</strong> [{change.before.join(', ')}] (
+                                {change.before.length} reservations)
+                              </Text>
+                              <Text fontSize='xs'>
+                                <strong>After:</strong> [{change.after.join(', ')}] (
+                                {change.after.length} reservations)
+                              </Text>
+                            </Stack>
+                          </Box>
+                        ))}
+                      </Stack>
+                    ) : (
+                      <Text fontSize='xs' color='gray.600'>
+                        No hour-level changes detected
+                      </Text>
+                    );
+                  })()}
+                </Box>
+              )}
           </Box>
         )}
 
@@ -2505,11 +3666,6 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
                       <Text fontSize='sm' color='gray.500'>
                         {formatDate(activity.timestamp)}
                       </Text>
-                      {summary.hasChanges && (
-                        <Badge colorScheme='orange' size='sm'>
-                          Modified
-                        </Badge>
-                      )}
                     </Flex>
 
                     <Text fontSize='lg' fontWeight='medium' mb={2}>
@@ -2536,6 +3692,13 @@ const ActivityLogs: React.FC<ActivityLogsProps> = () => {
                           User: {activity.userEmail || 'Anonymous'}
                         </Text>
                       </Box>
+                      {activity.locationId && (
+                        <Box>
+                          <Text fontSize='sm' color='purple.600' fontWeight='medium'>
+                            Location: {summary.locationInfo || activity.locationId}
+                          </Text>
+                        </Box>
+                      )}
                     </Stack>
 
                     {/* Key Information */}

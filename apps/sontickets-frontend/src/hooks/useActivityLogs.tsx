@@ -10,6 +10,14 @@ export type ActivityType =
   | 'reservation_create'
   | 'reservation_modify'
   | 'reservation_delete'
+  // Reservation cancellation types
+  | 'reservation_cancel'
+  | 'reservation_cancel_location_update_before'
+  | 'reservation_cancel_location_update_after'
+  | 'reservation_cancel_complete'
+  | 'reservation_cancel_error'
+  | 'reservation_cancellation_complete'
+  | 'reservation_cancellation_error'
   // Consolidated reservation modification
   | 'reservation_modification_complete'
   // Detailed reservation debugging types
@@ -63,7 +71,7 @@ export const useActivityLogs = () => {
 
       const activityLog = {
         ...activity,
-        companyId: activity.companyId || user?.company?.id,
+        companyId: activity?.companyId || user?.company?.id || '',
         userId: user?.uid || null,
         userEmail: user?.email || null,
         timestamp: new Date(),
