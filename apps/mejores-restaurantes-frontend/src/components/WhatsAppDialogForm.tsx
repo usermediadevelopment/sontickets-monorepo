@@ -78,9 +78,9 @@ export function WhatsAppDialogForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-10/12 md:w-2/6 md:max-w-[400px]  rounded-lg ">
+      <DialogContent className="w-10/12 md:w-2/6 md:max-w-[400px] max-h-[80vh] rounded-lg overflow-auto">
         <DialogHeader>
-          <DialogTitle>¿Necesitas ayuda?</DialogTitle>
+          <DialogTitle>¿Necesitas ayuda? </DialogTitle>
           <DialogDescription>
             Completa tus datos y te resolveremos tus dudas en WhatsApp en
             minutos.
@@ -94,7 +94,9 @@ export function WhatsAppDialogForm({
             <Input
               id="name"
               placeholder="Escribe tu nombre"
-              {...register("name", { required: "Por favor, dinos tu nombre" })}
+              {...register("name", {
+                required: "Por favor, dinos tu nombre",
+              })}
             />
             {errors.name && (
               <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>

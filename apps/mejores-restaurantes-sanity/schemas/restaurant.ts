@@ -130,6 +130,7 @@ export const restaurantSchema = defineType({
               {title: 'COP', value: 'COP'},
               {title: 'EUR', value: 'EUR'},
               {title: 'GBP', value: 'GBP'},
+              {title: 'GTQ', value: 'GTQ'},
               // Add more currencies as needed
             ],
           },
