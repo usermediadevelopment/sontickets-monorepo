@@ -309,6 +309,7 @@ const ReportsPage = () => {
                         return <Th key={field?.slug ?? ''}>{field.name.es}</Th>;
                       })}
                       <Th>Generada desde</Th>
+                      {user?.company?.others?.isSourceActive && <Th>Fuente</Th>}
 
                       <Th>Promociones especiales</Th>
                       <Th>Fecha solicitud</Th>
@@ -335,6 +336,9 @@ const ReportsPage = () => {
                             return <Td key={field?.slug}>{reservation[field?.slug ?? '']}</Td>;
                           })}
                           <Td>{reservation.from ?? '--'}</Td>
+                          {user?.company?.others?.isSourceActive && (
+                            <Td>{reservation.source ?? '--'}</Td>
+                          )}
                           <Td>{reservation.acceptReceiveNews ? 'si' : 'no'}</Td>
                           <Td>{format(new Date(reservation.createdAt), 'dd/MM/yyyy hh:mm a')}</Td>
                         </Tr>
