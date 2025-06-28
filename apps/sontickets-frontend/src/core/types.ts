@@ -134,6 +134,7 @@ export type Company = {
   type: string;
   status?: 'active' | 'inactive';
   isLeadsActive: boolean;
+  isSourceActive: boolean;
   settings: {
     reservationUpdates: {
       thanksForVisitUs: {

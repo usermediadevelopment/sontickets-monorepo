@@ -39,8 +39,6 @@ const SidebarWithHeader = () => {
   const { isOpen, onToggle } = useDisclosure();
   const { user, signOut: signOutContext } = useAuth();
 
-  console.log('user', user);
-
   const navigate = useNavigate();
 
   const chunks = useHighlight({

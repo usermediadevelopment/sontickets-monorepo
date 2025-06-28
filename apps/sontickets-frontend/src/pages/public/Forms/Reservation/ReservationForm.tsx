@@ -109,6 +109,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const source = useGetParam('source');
   const { logError } = useErrorLogs();
 
   // Check if company is active - disable form if company is inactive
@@ -342,6 +343,7 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
         status: 'pending',
         isUpdatedByUser: false,
         lang,
+        source,
       };
 
       let reservations = location?.reservations;
