@@ -300,6 +300,8 @@ const ReportsPage = () => {
                     <Tr>
                       <Th>Número de personas</Th>
                       <Th>Ubicación</Th>
+                      <Th>Estado</Th>
+                      <Th>Valor Total</Th>
                       <Th>Fecha reserva</Th>
                       <Th>Hora inicio</Th>
                       <Th>Hora Fin</Th>
@@ -322,6 +324,8 @@ const ReportsPage = () => {
                         <Tr key={`${reservation.identification}-${index}`}>
                           <Td>{reservation.numberPeople}</Td>
                           <Td>{reservation?.location?.name ?? ''}</Td>
+                          <Td>{reservation.status}</Td>
+                          <Td>{reservation.payment?.amount ?? 0}</Td>
                           <Td>{format(date, 'dd/MM/yyyy')}</Td>
                           <Td>
                             {reservation?.startHour ? reservation.startHour : reservation.time}
