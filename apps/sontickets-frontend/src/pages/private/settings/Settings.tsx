@@ -29,6 +29,7 @@ import {
   formatHourWithPeriod,
 } from '~/utils/date';
 import Integrations from './children/integrations/Integrations';
+import Others from './children/others/others';
 
 const Settings = () => {
   const { user } = useAuth();
@@ -51,6 +52,7 @@ const Settings = () => {
           <Tab>Formulario de reserva</Tab>
           <Tab>Email</Tab>
           <Tab>Integraciones</Tab>
+          <Tab>Otros</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -103,6 +105,9 @@ const Settings = () => {
           </TabPanel>
           <TabPanel>
             <Integrations />
+          </TabPanel>
+          <TabPanel>
+            <Others />
           </TabPanel>
         </TabPanels>
       </Tabs>

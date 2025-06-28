@@ -41,6 +41,23 @@ export const authReducer: Reducer<AuthState, AuthAction> = (state, action) => {
         loading: false,
       };
 
+    case AuthActionTypes.UPDATE_USER:
+      const userData = payload as Partial<User>;
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          ...userData,
+          // Handle nested company object merge
+          ...(userData.company && {
+            company: {
+              ...state.user.company,
+              ...userData.company,
+            },
+          }),
+        },
+      };
+
     default:
       return authInitialState;
   }

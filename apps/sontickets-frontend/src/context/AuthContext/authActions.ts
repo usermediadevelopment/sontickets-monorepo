@@ -5,6 +5,7 @@ export enum AuthActionTypes {
   SIGN_IN_SUCCESS = 'SIGN_IN_SUCCESS',
   SIGN_IN_FAILURE = 'SIGN_IN_FAILURE',
   SIGN_OUT = 'SIGN_OUT',
+  UPDATE_USER = 'UPDATE_USER',
 }
 
 // An interface for our actions
@@ -28,4 +29,9 @@ export const signInFailure = (): AuthAction => ({
 
 export const signOutSuccess = (): AuthAction => ({
   type: AuthActionTypes.SIGN_OUT,
+});
+
+export const updateUserAction = (userData: Partial<User>): AuthAction => ({
+  type: AuthActionTypes.UPDATE_USER,
+  payload: userData,
 });

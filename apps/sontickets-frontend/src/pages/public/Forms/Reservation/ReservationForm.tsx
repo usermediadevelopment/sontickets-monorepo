@@ -774,6 +774,16 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
     }
   };
 
+  const handlePopulateForm = () => {
+    const defaultFields = user?.company?.others?.populateForm?.fields;
+    if (defaultFields) {
+      Object.entries(defaultFields ?? {}).forEach(([key, value]) => {
+        setValue(key, value);
+      });
+    }
+    setValue('emailConfirmation', watch('email') ?? '');
+  };
+
   useEffect(() => {
     if (reservation) {
       const locationSelected = locationsCloneRef.current.find((location) => {
@@ -871,7 +881,20 @@ const ReservationForm = ({ reservation }: ReservationFormProps) => {
   return (
     <>
       {!reservation && (
-        <Box mb={4}>
+        <Box mb={4} display={'flex'} flexDirection={'column'}>
+          <div>
+            {user?.company?.others?.populateForm?.isActive && (
+              <Button
+                onClick={handlePopulateForm}
+                loadingText='Cargando...'
+                colorScheme='blue'
+                size='sm'
+              >
+                Autocompletar formulario
+              </Button>
+            )}
+          </div>
+
           <span>
             {t('reservation_form.title_chunk_1')}
             <span style={{ fontWeight: 'bold' }}> {t('reservation_form.title_chunk_2')}</span>.{' '}

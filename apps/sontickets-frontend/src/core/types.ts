@@ -125,6 +125,16 @@ export interface Day {
   label: string;
 }
 
+export interface CompanyOthersConfig {
+  isSourceActive: boolean;
+  populateForm: {
+    isActive: boolean;
+    fields?: {
+      [key: string]: string;
+    };
+  };
+}
+
 export type Company = {
   logoUrl: string;
   termsAndConditionUrl: string;
@@ -135,6 +145,7 @@ export type Company = {
   status?: 'active' | 'inactive';
   isLeadsActive: boolean;
   isSourceActive: boolean;
+  others: CompanyOthersConfig;
   settings: {
     reservationUpdates: {
       thanksForVisitUs: {
