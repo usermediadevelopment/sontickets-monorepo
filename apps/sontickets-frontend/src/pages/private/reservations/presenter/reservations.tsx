@@ -418,7 +418,7 @@ const Reservations = () => {
                             return <Td key={field.slug}>{reservation[field?.slug ?? '']}</Td>;
                           })}
                           <Td>{reservation.from ?? '--'}</Td>
-                          {user.company?.others.isSourceActive && (
+                          {user.company?.others?.isSourceActive && (
                             <Td>{reservation.source ?? '--'}</Td>
                           )}
                           <Td>{reservation.acceptReceiveNews ? 'si' : 'no'}</Td>
