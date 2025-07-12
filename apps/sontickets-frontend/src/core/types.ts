@@ -162,6 +162,10 @@ export type Company = {
         conversionId: string;
         conversionTag: string;
       };
+      metaAds?: {
+        pixelId: string;
+        accessToken: string;
+      };
     };
   };
 };

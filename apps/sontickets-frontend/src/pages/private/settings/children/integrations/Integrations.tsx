@@ -9,14 +9,12 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
-  Heading,
-  Text,
   Icon,
   useColorModeValue,
-  Container,
 } from '@chakra-ui/react';
 import { FaGoogle, FaFacebook } from 'react-icons/fa';
 import { GoogleAds } from './components/GoogleAds';
+import { MetaAds } from './components/MetaAds';
 
 const Integrations = () => {
   const bgColor = useColorModeValue('white', 'gray.800');
@@ -63,10 +61,7 @@ const Integrations = () => {
             <GoogleAds />
           </TabPanel>
           <TabPanel>
-            <Container maxW='container.md'>
-              <Heading size='lg'>Meta Ads Integration</Heading>
-              <Text mt={2}>Coming soon...</Text>
-            </Container>
+            <MetaAds />
           </TabPanel>
         </TabPanels>
       </Tabs>
