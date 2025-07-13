@@ -83,6 +83,9 @@ export const Forms = () => {
   const conversionTag =
     company?.settings?.integrations?.googleAds?.conversionTag || 'cP08COGm-LYaEO21udAB';
 
+  // Get company Meta Ads data if available, or use fallback values
+  const metaPixelId = company?.settings?.integrations?.metaAds?.pixelId || '1731663031561672';
+  console.log('metaPixelId', metaPixelId);
   // Show inactive company message if company exists but is inactive
   if (company && isCompanyInactive) {
     return (
@@ -140,6 +143,30 @@ export const Forms = () => {
           window.gtag_report_conversion = gtag_report_conversion;
           `}
           </script>
+
+          {/* Meta Pixel Code */}
+          <script>
+            {`
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${metaPixelId}');
+fbq('track', 'PageView');
+            `}
+          </script>
+          <noscript>
+            {`<img
+              height='1'
+              width='1'
+              style={{ display: 'none' }}
+              src='https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1'
+            />`}
+          </noscript>
         </Helmet>
       )}
       <Form />
